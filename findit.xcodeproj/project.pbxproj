@@ -7,8 +7,29 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		52C5179316EB89BC004E1319 /* RgnGrid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 52C5179216EB89BC004E1319 /* RgnGrid.cpp */; };
+		F500F54517042FC2009B70D0 /* UIKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F500F54417042FC2009B70D0 /* UIKit.framework */; };
+		F500F54717042FCB009B70D0 /* Foundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F500F54617042FCB009B70D0 /* Foundation.framework */; };
+		F500F54917042FD8009B70D0 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F500F54817042FD8009B70D0 /* CoreGraphics.framework */; };
+		F500F54D1704302B009B70D0 /* libc++.dylib in Frameworks */ = {isa = PBXBuildFile; fileRef = F500F54C1704302B009B70D0 /* libc++.dylib */; };
+		F50C6C4C16F0F7A400865C78 /* Thinning.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50C6C4A16F0F7A400865C78 /* Thinning.cpp */; };
+		F5135980170ABA8D005B2024 /* Icon.png in Resources */ = {isa = PBXBuildFile; fileRef = F513597F170ABA8D005B2024 /* Icon.png */; };
+		F5135983170ABA9D005B2024 /* FindIt-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F5135982170ABA9D005B2024 /* FindIt-Info.plist */; };
+		F5135986170ABAAC005B2024 /* Rgn.m in Sources */ = {isa = PBXBuildFile; fileRef = F5135985170ABAAC005B2024 /* Rgn.m */; };
+		F5135987170ABAAC005B2024 /* Rgn.m in Sources */ = {isa = PBXBuildFile; fileRef = F5135985170ABAAC005B2024 /* Rgn.m */; };
+		F5279990170B094000E9F5AD /* Icon114.png in Resources */ = {isa = PBXBuildFile; fileRef = F527998F170B094000E9F5AD /* Icon114.png */; };
+		F5279992170B097000E9F5AD /* Icon57.png in Resources */ = {isa = PBXBuildFile; fileRef = F5279991170B097000E9F5AD /* Icon57.png */; };
+		F5945DA817001E7B004DBB3D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = F5945DA617001E7B004DBB3D /* InfoPlist.strings */; };
+		F5945DAA17001E7B004DBB3D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = F5945DA917001E7B004DBB3D /* main.m */; };
+		F5945DAE17001E7B004DBB3D /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F5945DAD17001E7B004DBB3D /* AppDelegate.m */; };
+		F5945DB117001E7B004DBB3D /* MainStoryboard_iPhone.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F5945DAF17001E7B004DBB3D /* MainStoryboard_iPhone.storyboard */; };
+		F5945DB417001E7B004DBB3D /* MainStoryboard_iPad.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = F5945DB217001E7B004DBB3D /* MainStoryboard_iPad.storyboard */; };
+		F5945DB717001E7B004DBB3D /* ViewController.m in Sources */ = {isa = PBXBuildFile; fileRef = F5945DB617001E7B004DBB3D /* ViewController.m */; };
 		F5C9913616E7B44800FE8D92 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5C9913516E7B44800FE8D92 /* main.cpp */; };
 		F5C9913816E7B44800FE8D92 /* findit.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = F5C9913716E7B44800FE8D92 /* findit.1 */; };
+		F5E6A30716F36CBE00221295 /* Denosie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5E6A30516F36CBE00221295 /* Denosie.cpp */; };
+		F5F6F05F17044333001AF099 /* RgnGrid.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 52C5179216EB89BC004E1319 /* RgnGrid.cpp */; };
+		F5F6F06017044337001AF099 /* Denosie.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F5E6A30516F36CBE00221295 /* Denosie.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -25,12 +46,51 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
-		F5C9913116E7B44800FE8D92 /* findit */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = findit; sourceTree = BUILT_PRODUCTS_DIR; };
+		52C5179116EB8937004E1319 /* RgnGrid.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = RgnGrid.h; path = ../findit/RgnGrid.h; sourceTree = "<group>"; };
+		52C5179216EB89BC004E1319 /* RgnGrid.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = RgnGrid.cpp; path = ../findit/RgnGrid.cpp; sourceTree = "<group>"; };
+		F500F54417042FC2009B70D0 /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator5.1.sdk/System/Library/Frameworks/UIKit.framework; sourceTree = DEVELOPER_DIR; };
+		F500F54617042FCB009B70D0 /* Foundation.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Foundation.framework; path = Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator5.1.sdk/System/Library/Frameworks/Foundation.framework; sourceTree = DEVELOPER_DIR; };
+		F500F54817042FD8009B70D0 /* CoreGraphics.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreGraphics.framework; path = Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator5.1.sdk/System/Library/Frameworks/CoreGraphics.framework; sourceTree = DEVELOPER_DIR; };
+		F500F54C1704302B009B70D0 /* libc++.dylib */ = {isa = PBXFileReference; lastKnownFileType = "compiled.mach-o.dylib"; name = "libc++.dylib"; path = "Platforms/iPhoneSimulator.platform/Developer/SDKs/iPhoneSimulator5.1.sdk/usr/lib/libc++.dylib"; sourceTree = DEVELOPER_DIR; };
+		F50C6C4A16F0F7A400865C78 /* Thinning.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Thinning.cpp; sourceTree = "<group>"; };
+		F50C6C4B16F0F7A400865C78 /* Thinning.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Thinning.h; sourceTree = "<group>"; };
+		F513597F170ABA8D005B2024 /* Icon.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; name = Icon.png; path = findit/Icon.png; sourceTree = SOURCE_ROOT; };
+		F5135982170ABA9D005B2024 /* FindIt-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "FindIt-Info.plist"; path = "findit/FindIt-Info.plist"; sourceTree = SOURCE_ROOT; };
+		F5135984170ABAAC005B2024 /* Rgn.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Rgn.h; path = findit/Rgn.h; sourceTree = SOURCE_ROOT; };
+		F5135985170ABAAC005B2024 /* Rgn.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp.preprocessed; fileEncoding = 4; name = Rgn.m; path = findit/Rgn.m; sourceTree = SOURCE_ROOT; };
+		F527998F170B094000E9F5AD /* Icon114.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon114.png; sourceTree = "<group>"; };
+		F5279991170B097000E9F5AD /* Icon57.png */ = {isa = PBXFileReference; lastKnownFileType = image.png; path = Icon57.png; sourceTree = "<group>"; };
+		F5945D9A17001E7B004DBB3D /* FindIt_iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FindIt_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		F5945DA717001E7B004DBB3D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
+		F5945DA917001E7B004DBB3D /* main.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = main.m; sourceTree = "<group>"; };
+		F5945DAB17001E7B004DBB3D /* FindIt-Prefix.pch */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = "FindIt-Prefix.pch"; sourceTree = "<group>"; };
+		F5945DAC17001E7B004DBB3D /* AppDelegate.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = AppDelegate.h; sourceTree = "<group>"; };
+		F5945DAD17001E7B004DBB3D /* AppDelegate.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = AppDelegate.m; sourceTree = "<group>"; };
+		F5945DB017001E7B004DBB3D /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard_iPhone.storyboard; sourceTree = "<group>"; };
+		F5945DB317001E7B004DBB3D /* en */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = en; path = en.lproj/MainStoryboard_iPad.storyboard; sourceTree = "<group>"; };
+		F5945DB517001E7B004DBB3D /* ViewController.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ViewController.h; sourceTree = "<group>"; };
+		F5945DB617001E7B004DBB3D /* ViewController.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; path = ViewController.m; sourceTree = "<group>"; };
+		F5945DBE17001E7B004DBB3D /* SenTestingKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = SenTestingKit.framework; path = Library/Frameworks/SenTestingKit.framework; sourceTree = DEVELOPER_DIR; };
+		F5C9913116E7B44800FE8D92 /* findit_opencv */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = findit_opencv; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5C9913516E7B44800FE8D92 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		F5C9913716E7B44800FE8D92 /* findit.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = findit.1; sourceTree = "<group>"; };
+		F5E6A30516F36CBE00221295 /* Denosie.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Denosie.cpp; path = ../findit/Denosie.cpp; sourceTree = "<group>"; };
+		F5E6A30616F36CBE00221295 /* Denosie.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Denosie.h; path = ../findit/Denosie.h; sourceTree = "<group>"; };
+		F5E6A30916F36E2600221295 /* Cache.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = Cache.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		F5945D9717001E7B004DBB3D /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F500F54D1704302B009B70D0 /* libc++.dylib in Frameworks */,
+				F500F54917042FD8009B70D0 /* CoreGraphics.framework in Frameworks */,
+				F500F54717042FCB009B70D0 /* Foundation.framework in Frameworks */,
+				F500F54517042FC2009B70D0 /* UIKit.framework in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F5C9912E16E7B44800FE8D92 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -41,10 +101,59 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		F5945D9C17001E7B004DBB3D /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+				F500F54C1704302B009B70D0 /* libc++.dylib */,
+				F500F54817042FD8009B70D0 /* CoreGraphics.framework */,
+				F500F54617042FCB009B70D0 /* Foundation.framework */,
+				F500F54417042FC2009B70D0 /* UIKit.framework */,
+				F5945DBE17001E7B004DBB3D /* SenTestingKit.framework */,
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
+		F5945DA317001E7B004DBB3D /* FindIt_iOS */ = {
+			isa = PBXGroup;
+			children = (
+				F513597F170ABA8D005B2024 /* Icon.png */,
+				F5E6A30616F36CBE00221295 /* Denosie.h */,
+				F5E6A30516F36CBE00221295 /* Denosie.cpp */,
+				52C5179216EB89BC004E1319 /* RgnGrid.cpp */,
+				52C5179116EB8937004E1319 /* RgnGrid.h */,
+				F5945DAC17001E7B004DBB3D /* AppDelegate.h */,
+				F5945DAD17001E7B004DBB3D /* AppDelegate.m */,
+				F5945DAF17001E7B004DBB3D /* MainStoryboard_iPhone.storyboard */,
+				F5945DB217001E7B004DBB3D /* MainStoryboard_iPad.storyboard */,
+				F5945DB517001E7B004DBB3D /* ViewController.h */,
+				F5945DB617001E7B004DBB3D /* ViewController.m */,
+				F5945DA417001E7B004DBB3D /* Supporting Files */,
+				F5135984170ABAAC005B2024 /* Rgn.h */,
+				F5135985170ABAAC005B2024 /* Rgn.m */,
+			);
+			name = FindIt_iOS;
+			path = FindIt;
+			sourceTree = "<group>";
+		};
+		F5945DA417001E7B004DBB3D /* Supporting Files */ = {
+			isa = PBXGroup;
+			children = (
+				F5135982170ABA9D005B2024 /* FindIt-Info.plist */,
+				F5945DA617001E7B004DBB3D /* InfoPlist.strings */,
+				F5945DA917001E7B004DBB3D /* main.m */,
+				F5945DAB17001E7B004DBB3D /* FindIt-Prefix.pch */,
+			);
+			name = "Supporting Files";
+			sourceTree = "<group>";
+		};
 		F5C9912616E7B44800FE8D92 = {
 			isa = PBXGroup;
 			children = (
-				F5C9913416E7B44800FE8D92 /* findit */,
+				F5279991170B097000E9F5AD /* Icon57.png */,
+				F527998F170B094000E9F5AD /* Icon114.png */,
+				F5C9913416E7B44800FE8D92 /* findit_opencv */,
+				F5945DA317001E7B004DBB3D /* FindIt_iOS */,
+				F5945D9C17001E7B004DBB3D /* Frameworks */,
 				F5C9913216E7B44800FE8D92 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -52,26 +161,48 @@
 		F5C9913216E7B44800FE8D92 /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				F5C9913116E7B44800FE8D92 /* findit */,
+				F5C9913116E7B44800FE8D92 /* findit_opencv */,
+				F5945D9A17001E7B004DBB3D /* FindIt_iOS.app */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		F5C9913416E7B44800FE8D92 /* findit */ = {
+		F5C9913416E7B44800FE8D92 /* findit_opencv */ = {
 			isa = PBXGroup;
 			children = (
 				F5C9913516E7B44800FE8D92 /* main.cpp */,
 				F5C9913716E7B44800FE8D92 /* findit.1 */,
+				F50C6C4A16F0F7A400865C78 /* Thinning.cpp */,
+				F50C6C4B16F0F7A400865C78 /* Thinning.h */,
+				F5E6A30916F36E2600221295 /* Cache.h */,
 			);
+			name = findit_opencv;
 			path = findit;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		F5C9913016E7B44800FE8D92 /* findit */ = {
+		F5945D9917001E7B004DBB3D /* FindIt_iOS */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = F5C9913B16E7B44800FE8D92 /* Build configuration list for PBXNativeTarget "findit" */;
+			buildConfigurationList = F5945DCD17001E7B004DBB3D /* Build configuration list for PBXNativeTarget "FindIt_iOS" */;
+			buildPhases = (
+				F5945D9617001E7B004DBB3D /* Sources */,
+				F5945D9717001E7B004DBB3D /* Frameworks */,
+				F5945D9817001E7B004DBB3D /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = FindIt_iOS;
+			productName = FindIt;
+			productReference = F5945D9A17001E7B004DBB3D /* FindIt_iOS.app */;
+			productType = "com.apple.product-type.application";
+		};
+		F5C9913016E7B44800FE8D92 /* findit_opencv */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = F5C9913B16E7B44800FE8D92 /* Build configuration list for PBXNativeTarget "findit_opencv" */;
 			buildPhases = (
 				F5C9912D16E7B44800FE8D92 /* Sources */,
 				F5C9912E16E7B44800FE8D92 /* Frameworks */,
@@ -81,9 +212,9 @@
 			);
 			dependencies = (
 			);
-			name = findit;
+			name = findit_opencv;
 			productName = findit;
-			productReference = F5C9913116E7B44800FE8D92 /* findit */;
+			productReference = F5C9913116E7B44800FE8D92 /* findit_opencv */;
 			productType = "com.apple.product-type.tool";
 		};
 /* End PBXNativeTarget section */
@@ -107,23 +238,180 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				F5C9913016E7B44800FE8D92 /* findit */,
+				F5C9913016E7B44800FE8D92 /* findit_opencv */,
+				F5945D9917001E7B004DBB3D /* FindIt_iOS */,
 			);
 		};
 /* End PBXProject section */
 
+/* Begin PBXResourcesBuildPhase section */
+		F5945D9817001E7B004DBB3D /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F5945DA817001E7B004DBB3D /* InfoPlist.strings in Resources */,
+				F5945DB117001E7B004DBB3D /* MainStoryboard_iPhone.storyboard in Resources */,
+				F5945DB417001E7B004DBB3D /* MainStoryboard_iPad.storyboard in Resources */,
+				F5135980170ABA8D005B2024 /* Icon.png in Resources */,
+				F5135983170ABA9D005B2024 /* FindIt-Info.plist in Resources */,
+				F5279990170B094000E9F5AD /* Icon114.png in Resources */,
+				F5279992170B097000E9F5AD /* Icon57.png in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
 /* Begin PBXSourcesBuildPhase section */
+		F5945D9617001E7B004DBB3D /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				F5F6F06017044337001AF099 /* Denosie.cpp in Sources */,
+				F5F6F05F17044333001AF099 /* RgnGrid.cpp in Sources */,
+				F5945DAA17001E7B004DBB3D /* main.m in Sources */,
+				F5945DAE17001E7B004DBB3D /* AppDelegate.m in Sources */,
+				F5945DB717001E7B004DBB3D /* ViewController.m in Sources */,
+				F5135987170ABAAC005B2024 /* Rgn.m in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		F5C9912D16E7B44800FE8D92 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
 				F5C9913616E7B44800FE8D92 /* main.cpp in Sources */,
+				52C5179316EB89BC004E1319 /* RgnGrid.cpp in Sources */,
+				F50C6C4C16F0F7A400865C78 /* Thinning.cpp in Sources */,
+				F5E6A30716F36CBE00221295 /* Denosie.cpp in Sources */,
+				F5135986170ABAAC005B2024 /* Rgn.m in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXVariantGroup section */
+		F5945DA617001E7B004DBB3D /* InfoPlist.strings */ = {
+			isa = PBXVariantGroup;
+			children = (
+				F5945DA717001E7B004DBB3D /* en */,
+			);
+			name = InfoPlist.strings;
+			sourceTree = "<group>";
+		};
+		F5945DAF17001E7B004DBB3D /* MainStoryboard_iPhone.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				F5945DB017001E7B004DBB3D /* en */,
+			);
+			name = MainStoryboard_iPhone.storyboard;
+			sourceTree = "<group>";
+		};
+		F5945DB217001E7B004DBB3D /* MainStoryboard_iPad.storyboard */ = {
+			isa = PBXVariantGroup;
+			children = (
+				F5945DB317001E7B004DBB3D /* en */,
+			);
+			name = MainStoryboard_iPad.storyboard;
+			sourceTree = "<group>";
+		};
+/* End PBXVariantGroup section */
+
 /* Begin XCBuildConfiguration section */
+		F5945DCE17001E7B004DBB3D /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					armv6,
+					armv7,
+				);
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_WARN_OBJCPP_ARC_ABI = NO;
+				CLANG_WARN__ARC_BRIDGE_CAST_NONARC = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SYSTEM_APPS_DIR)/Xcode.app/Contents/Developer/Library/Frameworks\"",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "FindIt/FindIt-Prefix.pch";
+				GCC_VERSION = "";
+				HEADER_SEARCH_PATHS = (
+					/Users/zuzu/Source/opencv/modules/highgui/include,
+					/Users/zuzu/Source/opencv/modules/core/include,
+					/Users/zuzu/Source/opencv/modules/imgproc/include,
+				);
+				INFOPLIST_FILE = "FindIt/FindIt-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				LIBRARY_SEARCH_PATHS = "";
+				MACH_O_TYPE = mh_execute;
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_LDFLAGS = (
+					"\"$(SRCROOT)/../build_opencv_ios/3rdparty/lib/Release/libzlib.a\"",
+					"\"$(SRCROOT)/../build_opencv_ios/lib/Release/libopencv_core.a\"",
+					"\"$(SRCROOT)/../build_opencv_ios/lib/Release/libopencv_imgproc.a\"",
+					"\"$(SRCROOT)/../build_opencv_ios/lib/Release/libopencv_highgui.a\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				"PROVISIONING_PROFILE[sdk=iphoneos*]" = "";
+				SDKROOT = iphoneos;
+				STRIP_INSTALLED_PRODUCT = NO;
+				SYMROOT = /Users/zuzu/Source/Build;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALID_ARCHS = "armv7 armv6";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Debug;
+		};
+		F5945DCF17001E7B004DBB3D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ARCHS = (
+					armv6,
+					armv7,
+				);
+				CLANG_ENABLE_OBJC_ARC = NO;
+				CLANG_WARN_OBJCPP_ARC_ABI = NO;
+				CLANG_WARN__ARC_BRIDGE_CAST_NONARC = YES;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
+				FRAMEWORK_SEARCH_PATHS = (
+					"$(inherited)",
+					"\"$(SYSTEM_APPS_DIR)/Xcode.app/Contents/Developer/Library/Frameworks\"",
+				);
+				GCC_PRECOMPILE_PREFIX_HEADER = YES;
+				GCC_PREFIX_HEADER = "FindIt/FindIt-Prefix.pch";
+				GCC_VERSION = "";
+				HEADER_SEARCH_PATHS = (
+					/Users/zuzu/Source/opencv/modules/highgui/include,
+					/Users/zuzu/Source/opencv/modules/core/include,
+					/Users/zuzu/Source/opencv/modules/imgproc/include,
+				);
+				INFOPLIST_FILE = "FindIt/FindIt-Info.plist";
+				IPHONEOS_DEPLOYMENT_TARGET = 4.3;
+				LIBRARY_SEARCH_PATHS = "";
+				MACH_O_TYPE = mh_execute;
+				ONLY_ACTIVE_ARCH = NO;
+				OTHER_CFLAGS = "-DNS_BLOCK_ASSERTIONS=1";
+				OTHER_LDFLAGS = (
+					"\"$(SRCROOT)/../build_opencv_ios/3rdparty/lib/Release/libzlib.a\"",
+					"\"$(SRCROOT)/../build_opencv_ios/lib/Release/libopencv_core.a\"",
+					"\"$(SRCROOT)/../build_opencv_ios/lib/Release/libopencv_imgproc.a\"",
+					"\"$(SRCROOT)/../build_opencv_ios/lib/Release/libopencv_highgui.a\"",
+				);
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				PROVISIONING_PROFILE = "";
+				SDKROOT = iphoneos;
+				STRIP_INSTALLED_PRODUCT = NO;
+				SYMROOT = /Users/zuzu/Source/Build;
+				TARGETED_DEVICE_FAMILY = 1;
+				VALIDATE_PRODUCT = YES;
+				VALID_ARCHS = "armv7 armv6";
+				WRAPPER_EXTENSION = app;
+			};
+			name = Release;
+		};
 		F5C9913916E7B44800FE8D92 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -142,12 +430,66 @@
 					"$(inherited)",
 				);
 				GCC_SYMBOLS_PRIVATE_EXTERN = NO;
+				GCC_VERSION = "";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/gpu/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/videostab/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/stitching/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/contrib/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/legacy/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/calib3d/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/features2d/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/nonfree/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/photo/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/objdetect/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/video/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/ml/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/highgui/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/imgproc/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/flann/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/core/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/include",
+					/Users/zuzu/Source/Build,
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
 				ONLY_ACTIVE_ARCH = YES;
+				OTHER_LDFLAGS = (
+					"-Wl,-search_paths_first",
+					"-Wl,-headerpad_max_install_names",
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_core.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_flann.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_imgproc.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_highgui.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_ml.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_video.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_objdetect.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_photo.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_nonfree.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_features2d.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_calib3d.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_legacy.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_contrib.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_stitching.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_videostab.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_gpu.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_objdetect.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_photo.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_nonfree.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_legacy.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_ml.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_video.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_calib3d.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_features2d.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_flann.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_highgui.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_imgproc.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_core.dylib,
+					/Users/zuzu/Source/Build/3rdparty/lib/Debug/libzlib.a,
+				);
 				SDKROOT = macosx;
 			};
 			name = Debug;
@@ -164,11 +506,65 @@
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				GCC_C_LANGUAGE_STANDARD = gnu99;
 				GCC_ENABLE_OBJC_EXCEPTIONS = YES;
+				GCC_VERSION = "";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES;
 				GCC_WARN_UNINITIALIZED_AUTOS = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
+				HEADER_SEARCH_PATHS = (
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/gpu/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/videostab/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/stitching/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/contrib/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/legacy/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/calib3d/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/features2d/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/nonfree/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/photo/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/objdetect/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/video/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/ml/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/highgui/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/imgproc/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/flann/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/modules/core/include",
+					"/Users/zuzu/Source/opencv/OpenCV-2.4.4/include",
+					/Users/zuzu/Source/Build,
+				);
 				MACOSX_DEPLOYMENT_TARGET = 10.8;
+				OTHER_LDFLAGS = (
+					"-Wl,-search_paths_first",
+					"-Wl,-headerpad_max_install_names",
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_core.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_flann.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_imgproc.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_highgui.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_ml.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_video.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_objdetect.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_photo.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_nonfree.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_features2d.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_calib3d.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_legacy.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_contrib.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_stitching.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_videostab.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_gpu.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_objdetect.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_photo.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_nonfree.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_legacy.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_ml.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_video.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_calib3d.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_features2d.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_flann.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_highgui.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_imgproc.dylib,
+					/Users/zuzu/Source/Build/lib/Debug/libopencv_core.dylib,
+					/Users/zuzu/Source/Build/3rdparty/lib/Debug/libzlib.a,
+				);
 				SDKROOT = macosx;
 			};
 			name = Release;
@@ -176,6 +572,36 @@
 		F5C9913C16E7B44800FE8D92 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_OPENMP_SUPPORT = YES;
+				GCC_VERSION = "";
+				HEADER_SEARCH_PATHS = (
+					/Users/zuzu/Source/opencv/modules/gpu/include,
+					/Users/zuzu/Source/opencv/modules/highgui/include,
+					/Users/zuzu/Source/opencv/modules/imgproc/include,
+					/Users/zuzu/Source/opencv/modules/core/include,
+					/Users/zuzu/Source/opencv/include,
+				);
+				OTHER_LDFLAGS = (
+					"-Wl,-search_paths_first",
+					"-Wl,-headerpad_max_install_names",
+					"\"$(SRCROOT)/../Build_opencv_macx/3rdparty/lib/Debug/libzlib.a\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/3rdparty/lib/Debug/liblibjpeg.a\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/3rdparty/lib/Debug/liblibpng.a\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_calib3d.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_core.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_features2d.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_flann.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_gpu.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_highgui.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_imgproc.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_legacy.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_ml.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_nonfree.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_objdetect.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_photo.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_ts.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_video.dylib\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -183,6 +609,36 @@
 		F5C9913D16E7B44800FE8D92 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ENABLE_OPENMP_SUPPORT = YES;
+				GCC_VERSION = "";
+				HEADER_SEARCH_PATHS = (
+					/Users/zuzu/Source/opencv/modules/gpu/include,
+					/Users/zuzu/Source/opencv/modules/highgui/include,
+					/Users/zuzu/Source/opencv/modules/imgproc/include,
+					/Users/zuzu/Source/opencv/modules/core/include,
+					/Users/zuzu/Source/opencv/include,
+				);
+				OTHER_LDFLAGS = (
+					"-Wl,-search_paths_first",
+					"-Wl,-headerpad_max_install_names",
+					"\"$(SRCROOT)/../Build_opencv_macx/3rdparty/lib/Debug/libzlib.a\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/3rdparty/lib/Debug/liblibjpeg.a\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/3rdparty/lib/Debug/liblibpng.a\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_calib3d.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_core.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_features2d.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_flann.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_gpu.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_highgui.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_imgproc.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_legacy.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_ml.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_nonfree.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_objdetect.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_photo.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_ts.dylib\"",
+					"\"$(SRCROOT)/../Build_opencv_macx/lib/Debug/libopencv_video.dylib\"",
+				);
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;
@@ -190,6 +646,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		F5945DCD17001E7B004DBB3D /* Build configuration list for PBXNativeTarget "FindIt_iOS" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				F5945DCE17001E7B004DBB3D /* Debug */,
+				F5945DCF17001E7B004DBB3D /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		F5C9912B16E7B44800FE8D92 /* Build configuration list for PBXProject "findit" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
@@ -199,13 +664,14 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
-		F5C9913B16E7B44800FE8D92 /* Build configuration list for PBXNativeTarget "findit" */ = {
+		F5C9913B16E7B44800FE8D92 /* Build configuration list for PBXNativeTarget "findit_opencv" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				F5C9913C16E7B44800FE8D92 /* Debug */,
 				F5C9913D16E7B44800FE8D92 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
 	};
