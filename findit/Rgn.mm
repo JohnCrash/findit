@@ -7,11 +7,8 @@
 //
 
 #include "Rgn.h"
-
-#ifdef __cplusplus
 #include "RgnGrid.h"
 #include "Denosie.h"
-#endif
 
 /*
     根据m创建一个CGContextRef

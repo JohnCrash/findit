@@ -135,7 +135,9 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
     if( img )
     {
-        UIImage* pimg = RgnImage(img);
+        UIImage* pimg;
+        
+        pimg = RgnImage(img);
         if( pimg )
         {
             CGRect rect;

@@ -15,8 +15,8 @@
             <BuildableReference
                BuildableIdentifier = "primary"
                BlueprintIdentifier = "F5C9913016E7B44800FE8D92"
-               BuildableName = "findit_opencv"
-               BlueprintName = "findit_opencv"
+               BuildableName = "Findit_OSX"
+               BlueprintName = "Findit_OSX"
                ReferencedContainer = "container:findit.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
@@ -33,8 +33,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F5C9913016E7B44800FE8D92"
-            BuildableName = "findit_opencv"
-            BlueprintName = "findit_opencv"
+            BuildableName = "Findit_OSX"
+            BlueprintName = "Findit_OSX"
             ReferencedContainer = "container:findit.xcodeproj">
          </BuildableReference>
       </MacroExpansion>
@@ -52,8 +52,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F5C9913016E7B44800FE8D92"
-            BuildableName = "findit_opencv"
-            BlueprintName = "findit_opencv"
+            BuildableName = "Findit_OSX"
+            BlueprintName = "Findit_OSX"
             ReferencedContainer = "container:findit.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
@@ -76,8 +76,8 @@
          <BuildableReference
             BuildableIdentifier = "primary"
             BlueprintIdentifier = "F5C9913016E7B44800FE8D92"
-            BuildableName = "findit_opencv"
-            BlueprintName = "findit_opencv"
+            BuildableName = "Findit_OSX"
+            BlueprintName = "Findit_OSX"
             ReferencedContainer = "container:findit.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
