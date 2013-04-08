@@ -9,7 +9,9 @@
 #import "AppDelegate.h"
 
 @implementation AppDelegate
-
+@synthesize window;
+@synthesize controller;
+/*
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
     // Override point for customization after application launch.
@@ -42,5 +44,17 @@
 {
     // Called when the application is about to terminate. Save data if appropriate. See also applicationDidEnterBackground:.
 }
+*/
+- (void)applicationDidFinishLaunching:(UIApplication *)application
+{
+    // create window and set up table view controller
+	[window addSubview:controller.view];
+	[window makeKeyAndVisible];
+}
 
+- (void)dealloc {
+    [controller release];
+    [window release];
+    [super dealloc];
+}
 @end

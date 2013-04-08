@@ -17,4 +17,5 @@
 @property (retain, nonatomic) IBOutlet UIScrollView *mImageScrollView;
 @property (retain, nonatomic) IBOutlet UIImageView *mImageView;
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *mSeeBut;
+@property (retain, nonatomic) IBOutlet UIProgressView *mProgressBar;
 @end

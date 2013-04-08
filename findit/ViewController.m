@@ -17,6 +17,7 @@
 @synthesize mImageScrollView;
 @synthesize mImageView;
 @synthesize mSeeBut;
+@synthesize mProgressBar;
 
 - (void)viewDidLoad
 {
@@ -43,9 +44,23 @@
 }
 
 /*
+    在图库中打开一个图像文件
+ */
+- (IBAction)OnSeeFromFile:(id)sender
+{
+    [self pickItAndRgn:false sender:sender];
+}
+
+/*
     打开摄像头拍摄一张围棋照片进行识别
  */
 - (IBAction)OnSeeIt:(id)sender
+{
+    [self pickItAndRgn:true sender:sender];
+}
+
+//如果b true马上拍摄一张照片进行识别,如果false将从已有的图片中选择一张进行识别
+- (void) pickItAndRgn : (bool) b sender:(id) sender
 {
     if(mPopover && [mPopover isPopoverVisible])
     { // 如果已经存在释放
@@ -63,7 +78,7 @@
     mImagePicker.sourceType = sourceType;
     mImagePicker.mediaTypes = [UIImagePickerController availableMediaTypesForSourceType:
                                sourceType];
- //   mImagePicker.mediaTypes = @[(NSString *) kUTTypeImage,(NSString *) kUTTypeMovie];
+    //   mImagePicker.mediaTypes = @[(NSString *) kUTTypeImage,(NSString *) kUTTypeMovie];
     
     mImagePicker.allowsEditing = NO;
     
@@ -75,21 +90,19 @@
     {
         mPopover = [[UIPopoverController alloc] initWithContentViewController:mImagePicker];
         mPopover.delegate = (id <UIPopoverControllerDelegate>)self;
-        
+        //弹出Popover并且将Popover的箭头指向sender
         [mPopover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
     }
     else
     {
         [self presentModalViewController: mImagePicker animated: YES];
     }
-    [mImagePicker release];
+    [mImagePicker release];    
 }
 
 - (void)imagePickerController:(UIImagePickerController *)picker
 didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
-    //选择图片
-    [self rgnIt:[info objectForKey:@"UIImagePickerControllerOriginalImage"]];
     if( mPopover )
     {
         [mPopover dismissPopoverAnimated:true];
@@ -98,6 +111,8 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
     }
     else
         [self dismissModalViewControllerAnimated:NO];
+    //选择图片
+    [self rgnIt:[info objectForKey:@"UIImagePickerControllerOriginalImage"]];
 }
 
 - (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
@@ -128,6 +143,7 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
 {
     [mImageView release];
     [mImageScrollView release];
+    [mProgressBar release];
     [super dealloc];
 }
 
@@ -136,8 +152,21 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
     if( img )
     {
         UIImage* pimg;
+        [mProgressBar setHidden:false];
+        [mProgressBar setNeedsDisplay];
         
+        for( int i = 0;i<10;i++ )
+        {
+        //   [NSThread sleepForTimeInterval:1];
+            NSDate* futureDate = [NSDate dateWithTimeInterval:0.1 sinceDate:[NSDate date]];
+            [[NSRunLoop currentRunLoop] runUntilDate:futureDate];
+            mProgressBar.progress = i/10.0;
+ //           [mProgressBar setProgress:i/10.0];
+        }
         pimg = RgnImage(img);
+        
+        [mProgressBar setHidden:true];
+        
         if( pimg )
         {
             CGRect rect;

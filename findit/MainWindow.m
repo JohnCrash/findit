@@ -41,6 +41,80 @@
 
 - (IBAction)OnSeeIt:(id)sender
 {
-    NSLog(@"Hello world");
+    if(mPopover && [mPopover isPopoverVisible])
+    { // 如果已经存在释放
+        [mPopover dismissPopoverAnimated:YES];
+        [mPopover release];
+    }
+    mImagePicker = [[UIImagePickerController alloc] init];
+    
+    UIImagePickerControllerSourceType sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
+    
+    if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+    {
+        sourceType = UIImagePickerControllerSourceTypeCamera;
+    }
+    mImagePicker.sourceType = sourceType;
+    mImagePicker.mediaTypes = [UIImagePickerController availableMediaTypesForSourceType:
+                               sourceType];
+    //   mImagePicker.mediaTypes = @[(NSString *) kUTTypeImage,(NSString *) kUTTypeMovie];
+    
+    mImagePicker.allowsEditing = NO;
+    
+    mImagePicker.delegate = (id <UIImagePickerControllerDelegate,
+                             UINavigationControllerDelegate>)self;
+    
+    NSString *deviceType = [UIDevice currentDevice].model;
+    if([deviceType isEqualToString:@"iPad"] || [deviceType isEqualToString:@"iPad Simulator"])
+    {
+        mPopover = [[UIPopoverController alloc] initWithContentViewController:mImagePicker];
+        mPopover.delegate = (id <UIPopoverControllerDelegate>)self;
+        
+        [mPopover presentPopoverFromBarButtonItem:sender permittedArrowDirections:UIPopoverArrowDirectionUp animated:YES];
+    }
+    else
+    {
+        [self presentModalViewController: mImagePicker animated: YES];
+    }
+    [mImagePicker release];    
+}
+
+- (void)imagePickerController:(UIImagePickerController *)picker
+didFinishPickingMediaWithInfo:(NSDictionary *)info
+{
+    //选择图片
+    [self rgnIt:[info objectForKey:@"UIImagePickerControllerOriginalImage"]];
+    if( mPopover )
+    {
+        [mPopover dismissPopoverAnimated:true];
+        [mPopover release];
+        mPopover = nil;
+    }
+    else
+        [self dismissModalViewControllerAnimated:NO];
+}
+
+- (void)imagePickerControllerDidCancel:(UIImagePickerController *)picker
+{
+    if( mPopover )
+    {
+        [mPopover dismissPopoverAnimated:true];
+        [mPopover release];
+        mPopover = nil;
+    }
+    else
+        [self dismissModalViewControllerAnimated:NO];
+}
+
+- (void)navigationController:(UINavigationController *)navigationController
+      willShowViewController:(UIViewController *)viewController
+                    animated:(BOOL)animated
+{
+}
+
+- (void)navigationController:(UINavigationController *)navigationController
+       didShowViewController:(UIViewController *)viewController
+                    animated:(BOOL)animated
+{
 }
 @end
