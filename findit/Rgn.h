@@ -6,19 +6,26 @@
 //  Copyright (c) 2013年 zuzu. All rights reserved.
 //
 
-#import <Foundation/Foundation.h>
-
 #ifndef __Rgn__h__
 #define __Rgn__h__
 
-#ifdef __cplusplus
-extern "C"
-{
-	//分析图像img,并且把中间过程存位图返回
-    UIImage* RgnImage(UIImage* img);
-}
-#else
-    UIImage* RgnImage(UIImage* img);
-#endif
+struct RgnWapper;
 
+//监视处理进度
+@protocol RgnProgress <NSObject>
+- (void)progress:(float) v;
+@end
+
+@interface Rgn: NSObject
+{
+@private
+    struct RgnWapper* mRgn;
+}
+- (void)rgnIt: (UIImage*) img minWidth: (int) width showProgress: (id<RgnProgress>) show;
+- (UIImage*)rgnImage: (int) type level: (int) level;
+
+//原图
+@property (retain) UIImage* Source;
+@property (assign) int BlockSize;
+@end
 #endif

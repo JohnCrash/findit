@@ -158,16 +158,18 @@ public:
     {
         destoryAllBlock();
     }
-    
-    void drawTL(Mat& mt);
-    void End();
-protected:
-    int search_block_size;
-    int helf_block_size;
     /*
      识别棋盘中的T和L型特征
      */
     void Rgn();
+    void RgnEdge();
+    void GuessGrid();
+    
+    void drawTL(Mat& mt,int type);
+    void End();
+protected:
+    int search_block_size;
+    int helf_block_size;
     
     typedef vector<TLPt> TLVector;
     TLVector TLs;

@@ -76,88 +76,95 @@ void RgnGrid::drawTLPt(Mat& mt,const TLPt& pt )
     }
 }
 
-void RgnGrid::drawTL(Mat& mt)
+void RgnGrid::drawTL(Mat& mt,int type)
 {
     Mat b(rows,cols,CV_8UC1,data);
     Rgn();
-    /*
+    
      //绘制TLs
-    for(TLVector::iterator i = TLs.begin();i!=TLs.end();++i)
+    if( type & 1 )
     {
-        Scalar color;
-        int w = 1;
-        if( i->type == TLType::TTyle )
+        for(TLVector::iterator i = TLs.begin();i!=TLs.end();++i)
         {
-            if( i->m == 1)
-                color = Scalar(128,255,0);
-            else if( i->m ==2 )
-                color = Scalar(0,128,255);
-            else if( i->m == 3 )
-                color = Scalar(128,0,255);
+            Scalar color;
+            int w = 1;
+            if( i->type == TLType::TTyle )
+            {
+                if( i->m == 1)
+                    color = Scalar(128,255,0);
+                else if( i->m ==2 )
+                    color = Scalar(0,128,255);
+                else if( i->m == 3 )
+                    color = Scalar(128,0,255);
+                else
+                    color = Scalar(0,0,0);
+            }
             else
-                color = Scalar(0,0,0);
+            {
+                w = 4;
+                if( i->m == 1)
+                    color = Scalar(255,0,0);
+                else if( i->m ==2 )
+                    color = Scalar(0,0,255);
+                else if( i->m == 3 )
+                    color = Scalar(0,255,0);
+                else
+                    color = Scalar(255,255,0);
+            }
+            drawTLPt(mt, *i);
         }
-        else
-        {
-            w = 4;
-            if( i->m == 1)
+    }
+    //绘制中间数据
+    if( type & 2 )
+    {
+        for( int k=0;k<4;k++ )
+        {   Scalar color;
+            if( k == 0)
                 color = Scalar(255,0,0);
-            else if( i->m ==2 )
+            else if( k ==1 )
                 color = Scalar(0,0,255);
-            else if( i->m == 3 )
+            else if( k == 2 )
                 color = Scalar(0,255,0);
             else
                 color = Scalar(255,255,0);
-        }
-        drawTLPt(mt, *i);
-    }*/
-    //绘制中间数据
-    
-    for( int k=0;k<4;k++ )
-    {   Scalar color;
-        if( k == 0)
-            color = Scalar(255,0,0);
-        else if( k ==1 )
-            color = Scalar(0,0,255);
-        else if( k == 2 )
-            color = Scalar(0,255,0);
-        else
-            color = Scalar(255,255,0);
-        for(TLVector::iterator i=TBorder[k].begin();i!=TBorder[k].end();++i )
-        {
-            drawTLPt(mt,*i);
-        }
-        drawTLPt(mt,Corner[k]);
-        int x0,y0,x1,y1;
-        float t = -1000;
-        x0 = OuterBorder[k][0]*t+OuterBorder[k][2];
-        y0 = OuterBorder[k][1]*t+OuterBorder[k][3];
-        t = 1000;
-        x1 = OuterBorder[k][0]*t+OuterBorder[k][2];
-        y1 = OuterBorder[k][1]*t+OuterBorder[k][3];
+            for(TLVector::iterator i=TBorder[k].begin();i!=TBorder[k].end();++i )
+            {
+                drawTLPt(mt,*i);
+            }
+            drawTLPt(mt,Corner[k]);
+            int x0,y0,x1,y1;
+            float t = -1000;
+            x0 = OuterBorder[k][0]*t+OuterBorder[k][2];
+            y0 = OuterBorder[k][1]*t+OuterBorder[k][3];
+            t = 1000;
+            x1 = OuterBorder[k][0]*t+OuterBorder[k][2];
+            y1 = OuterBorder[k][1]*t+OuterBorder[k][3];
 
-        line(mt,Point(x0,y0),Point(x1,y1),color,1,CV_AA);
-    }
- 
-    for( int k=0;k<4;k++ )
-    {
-        for(vector<Point2f>::iterator i=Edge[k].begin();i!=Edge[k].end();++i)
+            line(mt,Point(x0,y0),Point(x1,y1),color,1,CV_AA);
+        }
+     
+        for( int k=0;k<4;k++ )
         {
-            circle(mt, *i, 2, Scalar(255,0,0),2);
+            for(vector<Point2f>::iterator i=Edge[k].begin();i!=Edge[k].end();++i)
+            {
+                circle(mt, *i, 2, Scalar(255,0,0),2);
+            }
+        }
+        for(TLVector::iterator i=CrossPt.begin();i!=CrossPt.end();++i)
+        {
+            drawTLPt(mt, *i);
         }
     }
-    for(TLVector::iterator i=CrossPt.begin();i!=CrossPt.end();++i)
-    {
-        drawTLPt(mt, *i);
-    }
-
     //绘制19x19网格
-    for(int i=0;i<19;++i)
+    if( type & 4 )
     {
-        if( i<Edge[0].size() && 18-i<Edge[2].size() )
-            line(mt,Edge[0][i],Edge[2][18-i],Scalar(0,0,255),1,CV_AA);
-        if( i<Edge[1].size() && 18-i<Edge[3].size() )
-            line(mt,Edge[1][i],Edge[3][18-i],Scalar(0,0,255),1,CV_AA);
+        for(int i=0;i<19;++i)
+        {
+            if( i<Edge[0].size() && 18-i<Edge[2].size() )
+                line(mt,Edge[0][i],Edge[2][18-i],Scalar(0,0,255),1,CV_AA);
+            if( i<Edge[1].size() && 18-i<Edge[3].size() )
+                line(mt,Edge[1][i],Edge[3][18-i],Scalar(0,0,255),1,CV_AA);
+        }
     }
 }
 
@@ -197,7 +204,17 @@ void RgnGrid::Rgn()
             }
         }
     }
+    
+    destoryAllBlock();
+}
+
+void RgnGrid::RgnEdge()
+{
     SelectMatch(5*CV_PI/180);
+}
+
+void RgnGrid::GuessGrid()
+{
     if( Guess() )
     {
         printf("Found!\n");
@@ -206,8 +223,8 @@ void RgnGrid::Rgn()
     {
         printf("Error!\n");
     }
-    destoryAllBlock();
 }
+
 void RgnGrid::End()
 {
     TLs.clear();

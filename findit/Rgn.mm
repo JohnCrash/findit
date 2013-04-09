@@ -7,125 +7,131 @@
 //
 
 #include "Rgn.h"
+#include "CocoaMat.h"
 #include "RgnGrid.h"
 #include "Denosie.h"
 
+struct RgnWapper
+{
+    RgnGrid* rg;
+    Mat src; //原彩色图
+    Mat dst; //降噪完的二值图
+};
+
+@implementation Rgn
+@synthesize Source;
+@synthesize BlockSize;
+
+- (id)init
+{
+    self = [super init];
+    if( self )
+    {
+        mRgn = new RgnWapper();
+        BlockSize = 11;
+    }
+    return self;
+}
+
+- (void)dealloc
+{
+    [self releaseRgn];
+    delete mRgn;
+    [super dealloc];
+}
+
+- (void)releaseRgn
+{
+    [Source release];
+    delete mRgn->rg;
+    mRgn->src.release();
+    mRgn->dst.release();
+}
 /*
-    根据m创建一个CGContextRef
+    识别img中的图像
+    对原图像进行缩放,width给出最小的宽度.(在不影响结果的情况下减少数据处理量)
+    show进度回调函数
  */
-CGContextRef CreateBitmapContextFromMat(const Mat& m)
+- (void)rgnIt: (UIImage*) img
+     minWidth: (int) width
+        showProgress: (id<RgnProgress>) show
 {
-    CGContextRef context = NULL;
-    CGColorSpaceRef colorSpace;
+    NSAssert(mRgn!=NULL,@"mRgn is NULL");
     
-    assert(m.type()==CV_8UC4);
+    [show progress:0];
     
-    colorSpace = CGColorSpaceCreateDeviceRGB();
-    if (colorSpace == NULL)
-    {
-        NSLog(@"Error allocating color space");
-        return NULL;
-    }
-    
-    context = CGBitmapContextCreate (m.data, m.cols,m.rows, 8, m.cols*m.elemSize(),
-                                     colorSpace, kCGImageAlphaPremultipliedLast);
-    if (context == NULL)
-    {
-        NSLog(@"Context not created!");
-    }
-    CGColorSpaceRelease( colorSpace );
-    return context;
-}
-
-/*
-    将CGImageRef复制到cgtx
- */
-void DrawImageToCGContext(CGImageRef img,CGContextRef cgtx)
-{
-    CGRect rect = {{0,0},{0,0}};
-    rect.size.width = CGImageGetWidth(img);
-    rect.size.height = CGImageGetHeight(img);
-    CGContextDrawImage(cgtx, rect, img);
-}
-
-Mat CreateMatFromCGImage(CGImageRef img)
-{
-    Mat m;
-    m.create(CGImageGetHeight(img),CGImageGetWidth(img),CV_8UC4);
-    CGContextRef ctx = CreateBitmapContextFromMat(m);
-    if( ctx )
-    {
-        DrawImageToCGContext(img, ctx);
-        CGContextRelease(ctx);
-    }
-    return m;
-}
-
-static void releaseMat(void *info, const void *data, size_t size)
-{
-    Mat* pm = (Mat*)info;
-    if( pm )delete pm;
-}
-
-CGImage* CreateCGImageFromMat(Mat& m)
-{
-    CGImage* img;
-    CGColorSpaceRef colorSpace;
-    colorSpace = CGColorSpaceCreateDeviceRGB();
-    if (colorSpace == NULL)
-    {
-        NSLog(@"Error allocating color space");
-        return NULL;
-    }
-    /*
-     增加Mat引用计数
-     */
-    Mat* bk = new Mat(m);
-    CGDataProviderRef providerRef = CGDataProviderCreateWithData(bk,
-                                                                 m.data,
-                                                                 m.total()*m.elemSize(),
-                                                                 releaseMat);
-    img = CGImageCreate(m.cols,m.rows,
-                  m.elemSize1()*8,m.elemSize()*8,m.step1(),
-                        colorSpace,kCGBitmapByteOrderDefault,providerRef,
-                  NULL,YES,kCGRenderingIntentDefault);
-    CGColorSpaceRelease( colorSpace );
-    CGDataProviderRelease(providerRef);
-    return img;
-}
-
-UIImage* RgnImage(UIImage* img)
-{
-    Mat m,dst;
-    int block_size = 11;
-    
-    m = CreateMatFromCGImage([img CGImage]);
-    CGContextRef ctx = CreateBitmapContextFromMat(m);
-    if( ctx )
-    {
-        Mat bst;
-        DrawImageToCGContext([img CGImage],ctx);
-        CGContextRelease(ctx);
-        cvtColor(m, dst, CV_RGBA2GRAY,1);
-        adaptiveThreshold(dst,bst,255,ADAPTIVE_THRESH_MEAN_C,CV_THRESH_BINARY_INV,block_size,5);
-        deNosie(bst,dst,9);
-    }
+    if( Source == img )
+        return;
     else
-        return NULL;
+        [self releaseRgn];
     
-    RgnGrid grid(dst.cols,dst.rows,dst.data);
-    Mat src;
-    cvtColor(m, src, CV_RGBA2RGB);
-    CGImage* pout=CreateCGImageFromMat(src);
-    
-    grid.drawTL(src);
-    grid.End();
-    
-    if(pout)
+    Mat src,dst,bst;
+    CGSize size = [img size];
+    src = CreateMatFromCGImage([img CGImage],width,width*size.height/size.width);
+    if( src.empty() )
     {
-        UIImage* pret = [[UIImage alloc] initWithCGImage:pout];
-        CGImageRelease(pout);
+        NSLog(@"CreateMatFromCGImage(%@) return empty Mat",[img description]);
+        return;
+    }
+    //转换为灰度图
+    cvtColor(src, dst, CV_RGBA2GRAY,1);
+    //再将灰度图转换为二值图
+    adaptiveThreshold(dst,bst,255,ADAPTIVE_THRESH_MEAN_C,CV_THRESH_BINARY_INV,BlockSize,5);
+    //然后在降低噪点
+    deNosie(bst,dst,9);
+    //开始分析
+    mRgn->rg = new RgnGrid(dst.cols,dst.rows,dst.data);
+    mRgn->src = src;
+    mRgn->dst = dst;
+    
+    [show progress:1/4];
+    //分析TL+
+    mRgn->rg->Rgn();
+    [show progress:2/4];
+    //对边进行识别
+    mRgn->rg->RgnEdge();
+    [show progress:3/4];
+    //猜测
+    mRgn->rg->GuessGrid();
+    
+    Source = img;
+    [Source retain];
+    
+    [show progress:1];
+}
+
+//返回网格的大小,m,n
+
+/*
+    返回分析中的中间图
+    type = 0 背景为原图
+         = 1 二值图
+    level = 1 绘制初级的识别物,T,L,+角将被绘制
+    level = 2 绘制中间识别物,如四个角,边
+    level = 4 绘制最终识别的网格
+    允许使用组合方式
+ */
+- (UIImage*)rgnImage: (int) type level: (int) level
+{
+    Mat img;
+    if( mRgn )
+    {
+        if( type == 0 )
+            img = mRgn->src.clone();
+        else
+        {
+            cvtColor(mRgn->dst, img, CV_GRAY2BGRA);
+        }
+        CGImage* cim = CreateCGImageFromMat(img);
+        mRgn->rg->drawTL(img, level);
+        UIImage* pret = [[UIImage alloc] initWithCGImage:cim];
+        CGImageRelease(cim);
         return [pret autorelease];
     }
-    return NULL;
+    else
+    {
+        NSLog(@"mRgn==NULL");
+    }
+    return nil;
 }
+@end

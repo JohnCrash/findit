@@ -13,6 +13,8 @@
 		F500F54917042FD8009B70D0 /* CoreGraphics.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F500F54817042FD8009B70D0 /* CoreGraphics.framework */; };
 		F50C6C4C16F0F7A400865C78 /* Thinning.cpp in Sources */ = {isa = PBXBuildFile; fileRef = F50C6C4A16F0F7A400865C78 /* Thinning.cpp */; };
 		F5135983170ABA9D005B2024 /* FindIt-Info.plist in Resources */ = {isa = PBXBuildFile; fileRef = F5135982170ABA9D005B2024 /* FindIt-Info.plist */; };
+		F53BE6CC171448410011D3CA /* CocoaMat.mm in Sources */ = {isa = PBXBuildFile; fileRef = F53BE6CB171448410011D3CA /* CocoaMat.mm */; };
+		F53BE6CD171448410011D3CA /* CocoaMat.mm in Sources */ = {isa = PBXBuildFile; fileRef = F53BE6CB171448410011D3CA /* CocoaMat.mm */; };
 		F5945DA817001E7B004DBB3D /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = F5945DA617001E7B004DBB3D /* InfoPlist.strings */; };
 		F5945DAA17001E7B004DBB3D /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = F5945DA917001E7B004DBB3D /* main.m */; };
 		F5945DAE17001E7B004DBB3D /* AppDelegate.m in Sources */ = {isa = PBXBuildFile; fileRef = F5945DAD17001E7B004DBB3D /* AppDelegate.m */; };
@@ -55,6 +57,8 @@
 		F50C6C4B16F0F7A400865C78 /* Thinning.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Thinning.h; sourceTree = "<group>"; };
 		F5135982170ABA9D005B2024 /* FindIt-Info.plist */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = text.plist.xml; name = "FindIt-Info.plist"; path = "findit/FindIt-Info.plist"; sourceTree = SOURCE_ROOT; };
 		F5135984170ABAAC005B2024 /* Rgn.h */ = {isa = PBXFileReference; explicitFileType = sourcecode.cpp.objcpp.preprocessed; fileEncoding = 4; name = Rgn.h; path = findit/Rgn.h; sourceTree = SOURCE_ROOT; };
+		F53BE6C9171447BD0011D3CA /* CocoaMat.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = CocoaMat.h; path = findit/CocoaMat.h; sourceTree = SOURCE_ROOT; };
+		F53BE6CB171448410011D3CA /* CocoaMat.mm */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.objcpp; name = CocoaMat.mm; path = findit/CocoaMat.mm; sourceTree = SOURCE_ROOT; };
 		F5945D9A17001E7B004DBB3D /* FindIt_iOS.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = FindIt_iOS.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F5945DA717001E7B004DBB3D /* en */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = en; path = en.lproj/InfoPlist.strings; sourceTree = "<group>"; };
 		F5945DA917001E7B004DBB3D /* main.m */ = {isa = PBXFileReference; explicitFileType = sourcecode.c.objc.preprocessed; path = main.m; sourceTree = "<group>"; };
@@ -134,6 +138,8 @@
 				F5945DB617001E7B004DBB3D /* ViewController.m */,
 				F5945DA417001E7B004DBB3D /* Supporting Files */,
 				F5135984170ABAAC005B2024 /* Rgn.h */,
+				F53BE6C9171447BD0011D3CA /* CocoaMat.h */,
+				F53BE6CB171448410011D3CA /* CocoaMat.mm */,
 			);
 			name = FindIt_iOS;
 			path = FindIt;
@@ -275,6 +281,7 @@
 				F5945DAE17001E7B004DBB3D /* AppDelegate.m in Sources */,
 				F5945DB717001E7B004DBB3D /* ViewController.m in Sources */,
 				F5BE24BA170C8B3600DC43F0 /* Rgn.mm in Sources */,
+				F53BE6CD171448410011D3CA /* CocoaMat.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -286,6 +293,7 @@
 				52C5179316EB89BC004E1319 /* RgnGrid.cpp in Sources */,
 				F50C6C4C16F0F7A400865C78 /* Thinning.cpp in Sources */,
 				F5E6A30716F36CBE00221295 /* Denosie.cpp in Sources */,
+				F53BE6CC171448410011D3CA /* CocoaMat.mm in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

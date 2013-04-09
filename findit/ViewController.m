@@ -7,7 +7,6 @@
 //
 
 #import "ViewController.h"
-#import "Rgn.h"
 
 @interface ViewController ()
 
@@ -18,11 +17,14 @@
 @synthesize mImageView;
 @synthesize mSeeBut;
 @synthesize mProgressBar;
+@synthesize mRgnShowType;
+@synthesize mRgnBackground;
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
+    mRgn = [[Rgn alloc] init];
 }
 
 - (void)viewDidUnload
@@ -144,41 +146,71 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
     [mImageView release];
     [mImageScrollView release];
     [mProgressBar release];
+    [mRgn release];
+    [mRgnShowType release];
+    [mRgnBackground release];
+    [mRgnShowType release];
+    [mRgnBackground release];
     [super dealloc];
+}
+
+- (void)progress:(float)v
+{
+    //单线程允许,保证主线更新进度条
+    NSDate* futureDate = [NSDate dateWithTimeInterval:0.1 sinceDate:[NSDate date]];
+    [[NSRunLoop currentRunLoop] runUntilDate:futureDate];
+    mProgressBar.progress = v;
 }
 
 - (void)rgnIt:(UIImage *) img
 {
     if( img )
     {
-        UIImage* pimg;
         [mProgressBar setHidden:false];
-        [mProgressBar setNeedsDisplay];
         
-        for( int i = 0;i<10;i++ )
-        {
-        //   [NSThread sleepForTimeInterval:1];
-            NSDate* futureDate = [NSDate dateWithTimeInterval:0.1 sinceDate:[NSDate date]];
-            [[NSRunLoop currentRunLoop] runUntilDate:futureDate];
-            mProgressBar.progress = i/10.0;
- //           [mProgressBar setProgress:i/10.0];
-        }
-        pimg = RgnImage(img);
+        [mRgn rgnIt:img minWidth:320 showProgress:self];
         
         [mProgressBar setHidden:true];
         
-        if( pimg )
-        {
-            CGRect rect;
-            mImageScrollView.contentSize = [pimg size];
-            rect.origin.x = 0;
-            rect.origin.y = 0;
-            rect.size = [pimg size];
-            mImageView.frame = rect;
-            [mImageView setImage:pimg];
-        }
-        else
-            [mImageView setImage:img];
+        [self showAction];
     }
 }
+
+- (void)showAction
+{
+    UIImage* pimg;
+    int level,type;
+    if( [mRgnShowType selectedSegmentIndex] == 0 )
+        level = 1;
+    else if( [mRgnShowType selectedSegmentIndex] == 1 )
+        level = 2;
+    else
+        level = 4;
+    if( [mRgnBackground selectedSegmentIndex] == 0 )
+        type = 0;
+    else
+        type = 1;
+        
+    pimg = [mRgn rgnImage:type level:level];
+    if( pimg )
+    {
+        CGRect rect;
+        mImageScrollView.contentSize = [pimg size];
+        rect.origin.x = 0;
+        rect.origin.y = 0;
+        rect.size = [pimg size];
+        mImageView.frame = rect;
+        [mImageView setImage:pimg];
+    }
+}
+- (IBAction)rgnLevelChange:(id)sender
+{
+    [self showAction];
+}
+
+- (IBAction)rgnBackgroundChange:(id)sender
+{
+    [self showAction];
+}
+
 @end

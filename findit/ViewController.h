@@ -7,15 +7,30 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "Rgn.h"
 
-@interface ViewController : UIViewController <UIImagePickerControllerDelegate,UINavigationControllerDelegate,UIPopoverControllerDelegate>
+@interface ViewController : UIViewController
+        <UIImagePickerControllerDelegate,
+        UINavigationControllerDelegate,
+        UIPopoverControllerDelegate,
+        RgnProgress>
 {
     UIImagePickerController* mImagePicker;
-    UIPopoverController* mPopover;    
+    UIPopoverController* mPopover;
+    Rgn* mRgn;
 }
+
+- (void)progress:(float)v;
 
 @property (retain, nonatomic) IBOutlet UIScrollView *mImageScrollView;
 @property (retain, nonatomic) IBOutlet UIImageView *mImageView;
 @property (strong, nonatomic) IBOutlet UIBarButtonItem *mSeeBut;
+//进度条
 @property (retain, nonatomic) IBOutlet UIProgressView *mProgressBar;
+//显示分析阶段
+@property (retain, nonatomic) IBOutlet UISegmentedControl *mRgnShowType;
+
+//显示背景
+@property (retain, nonatomic) IBOutlet UISegmentedControl *mRgnBackground;
+
 @end
