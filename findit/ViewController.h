@@ -7,7 +7,15 @@
 //
 
 #import <UIKit/UIKit.h>
+#import "ConfigViewController.h"
 #import "Rgn.h"
+
+struct RgnConfig
+{
+    int minWidth;
+};
+
+extern struct RgnConfig gRgnConfig;
 
 @interface ViewController : UIViewController
         <UIImagePickerControllerDelegate,
@@ -32,5 +40,6 @@
 
 //显示背景
 @property (retain, nonatomic) IBOutlet UISegmentedControl *mRgnBackground;
+@property (retain, nonatomic) IBOutlet ConfigViewController *mConfigController;
 
 @end

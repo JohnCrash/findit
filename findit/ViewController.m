@@ -8,6 +8,13 @@
 
 #import "ViewController.h"
 
+struct RgnConfig gRgnConfig;
+
+void initRgnConfig()
+{
+    gRgnConfig.minWidth = 480;
+}
+
 @interface ViewController ()
 
 @end
@@ -19,12 +26,14 @@
 @synthesize mProgressBar;
 @synthesize mRgnShowType;
 @synthesize mRgnBackground;
+@synthesize mConfigController;
 
 - (void)viewDidLoad
 {
     [super viewDidLoad];
 	// Do any additional setup after loading the view, typically from a nib.
     mRgn = [[Rgn alloc] init];
+    initRgnConfig();
 }
 
 - (void)viewDidUnload
@@ -151,14 +160,15 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
     [mRgnBackground release];
     [mRgnShowType release];
     [mRgnBackground release];
+    [mConfigController release];
     [super dealloc];
 }
 
 - (void)progress:(float)v
 {
     //单线程允许,保证主线更新进度条
-    NSDate* futureDate = [NSDate dateWithTimeInterval:0.1 sinceDate:[NSDate date]];
-    [[NSRunLoop currentRunLoop] runUntilDate:futureDate];
+   // NSDate* futureDate = [NSDate dateWithTimeInterval:0.1 sinceDate:[NSDate date]];
+   // [[NSRunLoop currentRunLoop] runUntilDate:futureDate];
     mProgressBar.progress = v;
 }
 
@@ -167,8 +177,8 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
     if( img )
     {
         [mProgressBar setHidden:false];
-        
-        [mRgn rgnIt:img minWidth:320 showProgress:self];
+        int minWidth = gRgnConfig.minWidth<=0?img.size.width:gRgnConfig.minWidth;
+        [mRgn rgnIt:img minWidth:minWidth showProgress:self];
         
         [mProgressBar setHidden:true];
         
@@ -203,6 +213,8 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
         [mImageView setImage:pimg];
     }
 }
+
+//对显示进行调整
 - (IBAction)rgnLevelChange:(id)sender
 {
     [self showAction];
@@ -211,6 +223,12 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
 - (IBAction)rgnBackgroundChange:(id)sender
 {
     [self showAction];
+}
+
+//打开配置对话
+- (IBAction)rgnConfigDialog:(id)sender
+{
+    [self presentViewController:mConfigController animated:YES completion:nil];
 }
 
 @end

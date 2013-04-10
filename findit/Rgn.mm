@@ -117,9 +117,15 @@ struct RgnWapper
     if( mRgn )
     {
         if( type == 0 )
+        {
+            if( mRgn->src.empty() )
+                return NULL;
             img = mRgn->src.clone();
+        }
         else
         {
+            if( mRgn->dst.empty() )
+                return NULL;
             cvtColor(mRgn->dst, img, CV_GRAY2BGRA);
         }
         CGImage* cim = CreateCGImageFromMat(img);

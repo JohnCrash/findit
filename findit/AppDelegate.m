@@ -48,6 +48,9 @@
 - (void)applicationDidFinishLaunching:(UIApplication *)application
 {
     // create window and set up table view controller
+//    window = [[UIWindow alloc] initWithFrame:[[UIScreen mainScreen] bounds]];
+//    controller = [[ViewController alloc] initWithNibName:@"MainView" bundle:[NSBundle mainBundle]];
+    
 	[window addSubview:controller.view];
 	[window makeKeyAndVisible];
 }
