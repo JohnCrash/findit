@@ -135,7 +135,7 @@ namespace denosie
         /*
          沿着起点x,y开始在in中蔓延爬行
          如果bcopy是true把蔓延到的点复制到out中去,同时从in中删除
-         bcopy是false仅仅从in中删除,不进行复制
+         bcopy是false仅仅从out中删除,不进行复制
          返回有多少点被转移
          */
         int go(int x,int y,bool bcopy)
@@ -196,9 +196,16 @@ void deNosie(cv::Mat& in,cv::Mat& out,int ns)
     cols = in.cols;
     
     assert(in.type()==CV_8UC1);
-    
-    out.create(rows,cols,in.type());
-    out.zeros(rows, cols, in.type());
+    if( out.empty() )
+        out.create(rows,cols,in.type());
+    //out.zeros(rows, cols, in.type());
+    //在out是一个SubMat时,zeros不能正常工作.
+    for( int i = 0;i < rows;++i )
+    {
+        uchar* p = out.ptr(i);
+        for( int j = 0;j< cols;++j )
+            *(p+j) = 0;
+    }
     
     denosie::creep walker(in.data,out.data,rows,cols);
     

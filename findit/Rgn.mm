@@ -10,17 +10,52 @@
 #include "CocoaMat.h"
 #include "RgnGrid.h"
 #include "Denosie.h"
+#include <mach/mach_host.h>
+#include <sys/sysctl.h>
 
 struct RgnWapper
 {
     RgnGrid* rg;
-    Mat src; //原彩色图
-    Mat dst; //降噪完的二值图
 };
 
+unsigned int countCores()
+{
+    host_basic_info_data_t hostInfo;
+    mach_msg_type_number_t infoCount;
+    
+    infoCount = HOST_BASIC_INFO_COUNT;
+    host_info(mach_host_self(), HOST_BASIC_INFO,
+              (host_info_t)&hostInfo, &infoCount);
+    
+    return (unsigned int)(hostInfo.max_cpus);
+}
+
+unsigned int countCores2()
+{
+    size_t len;
+    unsigned int ncpu;
+    
+    len = sizeof(ncpu);
+    sysctlbyname ("hw.ncpu",&ncpu,&len,NULL,0);
+    
+    return ncpu;
+}
+
+void progress_callback( Rgn* self,float v )
+{
+    [[self Progress] progress:v];
+}
+
 @implementation Rgn
-@synthesize Source;
 @synthesize BlockSize;
+@synthesize Progress;
+
+enum
+{
+    GO,
+    STOP,
+    EXIT
+};
 
 - (id)init
 {
@@ -28,6 +63,7 @@ struct RgnWapper
     if( self )
     {
         mRgn = new RgnWapper();
+        mRgn->rg = new RgnGrid();
         BlockSize = 11;
     }
     return self;
@@ -42,11 +78,9 @@ struct RgnWapper
 
 - (void)releaseRgn
 {
-    [Source release];
     delete mRgn->rg;
-    mRgn->src.release();
-    mRgn->dst.release();
 }
+
 /*
     识别img中的图像
     对原图像进行缩放,width给出最小的宽度.(在不影响结果的情况下减少数据处理量)
@@ -60,12 +94,7 @@ struct RgnWapper
     
     [show progress:0];
     
-    if( Source == img )
-        return;
-    else
-        [self releaseRgn];
-    
-    Mat src,dst,bst;
+    Mat src;
     CGSize size = [img size];
     src = CreateMatFromCGImage([img CGImage],width,width*size.height/size.width);
     if( src.empty() )
@@ -73,31 +102,13 @@ struct RgnWapper
         NSLog(@"CreateMatFromCGImage(%@) return empty Mat",[img description]);
         return;
     }
-    //转换为灰度图
-    cvtColor(src, dst, CV_RGBA2GRAY,1);
-    //再将灰度图转换为二值图
-    adaptiveThreshold(dst,bst,255,ADAPTIVE_THRESH_MEAN_C,CV_THRESH_BINARY_INV,BlockSize,5);
-    //然后在降低噪点
-    deNosie(bst,dst,9);
-    //开始分析
-    mRgn->rg = new RgnGrid(dst.cols,dst.rows,dst.data);
-    mRgn->src = src;
-    mRgn->dst = dst;
-    
-    [show progress:1/4];
-    //分析TL+
-    mRgn->rg->Rgn();
-    [show progress:2/4];
-    //对边进行识别
-    mRgn->rg->RgnEdge();
-    [show progress:3/4];
-    //猜测
-    mRgn->rg->GuessGrid();
-    
-    Source = img;
-    [Source retain];
-    
-    [show progress:1];
+    Progress = show;
+    if( mRgn->rg->IsMutiCores()!=gRgnConfig.mutiCore )
+    {
+        cout << "switch thread mode\n";
+        mRgn->rg->resetThread(gRgnConfig.mutiCore);
+    }
+    mRgn->rg->rgnM(src,true,boost::bind(progress_callback,self,_1));
 }
 
 //返回网格的大小,m,n
@@ -118,15 +129,17 @@ struct RgnWapper
     {
         if( type == 0 )
         {
-            if( mRgn->src.empty() )
+            Mat s = mRgn->rg->getSourceMat();
+            if( s.empty() )
                 return NULL;
-            img = mRgn->src.clone();
+            img = s.clone();
         }
         else
         {
-            if( mRgn->dst.empty() )
+            Mat s = mRgn->rg->getBinaryMat();
+            if( s.empty() )
                 return NULL;
-            cvtColor(mRgn->dst, img, CV_GRAY2BGRA);
+            cvtColor(s, img, CV_GRAY2BGRA);
         }
         CGImage* cim = CreateCGImageFromMat(img);
         mRgn->rg->drawTL(img, level);

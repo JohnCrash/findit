@@ -12,6 +12,7 @@
 #include "opencv2/imgproc/imgproc.hpp"
 #include <math.h>
 #include <list>
+#include "boost/thread.hpp"
 
 using namespace cv;
 using namespace std;
@@ -144,30 +145,64 @@ struct TLPt
     {}
 };
 
+typedef boost::function<void (float)> ProgressFunc;
+
 class RgnGrid
 {
 public:
+    RgnGrid();
+    
+    virtual ~RgnGrid();
+    
+    void resetThread(bool b);
+    void rgnM( Mat& m,bool iswait,ProgressFunc fun );
+    Mat getBinaryMat();
+    Mat getSourceMat();
+    
+    void drawTL(Mat& mt,int type);
+    void clear();
+    
+    bool IsMutiCores(){ return mIsMutiCores; }
+protected:
+    Mat mSrc; //原图
+    Mat mDes; //中间图
+    Mat mB2;//二值图
     int cols;
     int rows;
     uchar* data;
-    
-    RgnGrid( int col,int row,uchar* d ):rows(row),cols(col),data(d)
-    {}
-    
-    virtual ~RgnGrid()
-    {
-        destoryAllBlock();
-    }
     /*
-     识别棋盘中的T和L型特征
+        使用多线程加入执行,对于只有一个核心的cpu使用后台执行
      */
-    void Rgn();
-    void RgnEdge();
-    void GuessGrid();
+    boost::mutex mMu;
+    boost::mutex mMu2;
+    boost::mutex mMutex;
+    boost::condition_variable_any mCondition;
+    boost::condition_variable_any mCondition2;
+    bool mExit;
+    bool mIsMutiCores;
+    bool mMainLoopGo;
+    bool mMainLoopComplate;
+    boost::barrier* mBarrier;
+    vector<boost::thread*> mThread;
+    vector<Mat> mSrcs; //线程分别处理的区块
+    vector<Mat> mDess;
+    vector<Mat> mB2s;
+    vector<Point2i> mRgnOffsetPts;
+    int mOffsetPtsCount;
+    int mThread_BlockSize;
+    int mThread_h;
+    int mThread_w;
+    float mProgress;
+    float mDeltaProgress;
+    ProgressFunc mProgressFunc;
     
-    void drawTL(Mat& mt,int type);
-    void End();
-protected:
+    void releaseThread();
+    void mainRgn();
+    void threadRgn( int i );
+    void praperRgnMultiThreadProcess();
+    bool getOffsetPt( Point2i& p );
+    void threadRgnExpand( int offx,int offy );
+    
     int search_block_size;
     int helf_block_size;
     
@@ -175,6 +210,14 @@ protected:
     TLVector TLs;
     
     bool isInTLs(int x,int y,int size);
+    
+    /*
+     识别棋盘中的T和L型特征
+     */
+    void Rgn();
+    void RgnEdge();
+    void GuessGrid();
+    
     /*
      p是要检测的数据块的起始地址
      x,y是块的左上角坐标

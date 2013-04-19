@@ -11,5 +11,6 @@
 @interface ConfigViewController : UIViewController
 
 @property (retain, nonatomic) IBOutlet UISwitch *mWidthSwitch;
+@property (retain, nonatomic) IBOutlet UISwitch *mMutiCore;
 @property (retain, nonatomic) IBOutlet UITextField *mWidth;
 @end

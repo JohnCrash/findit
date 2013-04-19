@@ -11,6 +11,14 @@
 
 struct RgnWapper;
 
+struct RgnConfig
+{
+    int minWidth;
+    bool mutiCore;
+};
+
+extern struct RgnConfig gRgnConfig;
+
 //监视处理进度
 @protocol RgnProgress <NSObject>
 - (void)progress:(float) v;
@@ -24,8 +32,7 @@ struct RgnWapper;
 - (void)rgnIt: (UIImage*) img minWidth: (int) width showProgress: (id<RgnProgress>) show;
 - (UIImage*)rgnImage: (int) type level: (int) level;
 
-//原图
-@property (retain) UIImage* Source;
 @property (assign) int BlockSize;
+@property (assign) id<RgnProgress> Progress;
 @end
 #endif

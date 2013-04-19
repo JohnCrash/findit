@@ -10,13 +10,6 @@
 #import "ConfigViewController.h"
 #import "Rgn.h"
 
-struct RgnConfig
-{
-    int minWidth;
-};
-
-extern struct RgnConfig gRgnConfig;
-
 @interface ViewController : UIViewController
         <UIImagePickerControllerDelegate,
         UINavigationControllerDelegate,

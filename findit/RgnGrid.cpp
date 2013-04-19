@@ -6,8 +6,35 @@
 //  Copyright (c) 2013年 zuzu. All rights reserved.
 //
 #include "RgnGrid.h"
-#include "Thinning.h"
+#include "Denosie.h"
 #include <fstream>
+
+//测试性能用,一个作用域计时器.打印析构时间减去构造事件
+class scope_timer
+{
+public:
+    scope_timer( string _n )
+    {
+        t = boost::posix_time::microsec_clock::local_time();
+        last = t;
+        name = _n;
+    }
+    void escaped( string msg )
+    {
+        boost::posix_time::time_duration d = boost::posix_time::microsec_clock::local_time() - last;
+        last = boost::posix_time::microsec_clock::local_time();
+        cout << "'" << msg <<"' duration: " << d.total_microseconds()/1000.0 << " ms" << endl;
+    }
+    ~scope_timer()
+    {
+        boost::posix_time::time_duration d = boost::posix_time::microsec_clock::local_time() - t;
+        cout << "'" << name  <<"' tatol duration: " << d.total_microseconds()/1000.0 << " ms" << endl;
+    }
+private:
+    boost::posix_time::ptime t;
+    boost::posix_time::ptime last;
+    string name;
+};
 //测试用，保存直线到svg格式
 void save(vector<Lines>& lines)
 {
@@ -43,6 +70,255 @@ static Point2f Cross(Vec4f& l0,Vec4f& l1)
     cp.y = l0[1]*t0+l0[3];
     return cp;
 }
+
+/*
+    RgnGrid可以复用
+    创建的时候自动创建多个线程,节省使用中每次创建线程的时间花费
+ */
+RgnGrid::RgnGrid()
+{
+    mBarrier = NULL;
+    resetThread(true);
+}
+
+//重新创建线程b,指出是否分配和核心数相同的线程.
+void RgnGrid::resetThread(bool b)
+{
+    releaseThread();
+    int cores = boost::thread::hardware_concurrency();
+    
+    if( cores <= 0 )
+    {
+        cout<<"error hardware_concurrency() <= 0!";
+        cores = 1;
+    }
+    mIsMutiCores = b;
+    
+    mExit = false;
+    
+    mMainLoopGo = false;
+    if( b )
+        mBarrier = new boost::barrier(cores);
+    else
+        mBarrier = NULL;
+
+    mThread.push_back(new boost::thread(boost::bind(&RgnGrid::mainRgn,this)));
+    if( b )
+    {
+        for( int i=1;i<cores;++i )
+        {
+            mThread.push_back(new boost::thread(&RgnGrid::threadRgn,this,i));
+        }
+    }
+}
+//iswait = true 将等待处理完返回,否则将立刻返回
+void RgnGrid::rgnM( Mat& m ,bool iswait,ProgressFunc progress )
+{
+    mProgressFunc = progress;
+    mSrc = m;
+    {
+        boost::mutex::scoped_lock lock(mMu);
+        mMainLoopGo = true;
+    }
+    mMainLoopComplate = false;
+    mCondition.notify_one(); //启动主处理循环
+    if( iswait )
+    {
+        boost::mutex::scoped_lock lock(mMu2);
+        while( !mMainLoopComplate )
+        {
+            mCondition2.wait(mMu2);
+        }
+    }
+}
+
+Mat RgnGrid::getBinaryMat()
+{
+    return mB2;
+}
+
+Mat RgnGrid::getSourceMat()
+{
+    return mSrc;
+}
+
+//终止线程
+void RgnGrid::releaseThread()
+{
+    mExit = true;
+    {
+        boost::mutex::scoped_lock lock(mMu);
+        mMainLoopGo = true;
+    }
+    mCondition.notify_one();
+    
+    for( int i = 0;i < mThread.size();++i )
+    {
+        mThread[i]->join();
+        delete mThread[i];
+    }
+    delete mBarrier;
+    mThread.clear();
+}
+
+void RgnGrid::mainRgn()
+{
+    while(!mExit)
+    {
+        {
+            boost::mutex::scoped_lock lock(mMu);
+            while( !mMainLoopGo )
+            {
+                mCondition.wait(mMu);
+            }
+        }
+        if( mExit )
+        {
+            if(mBarrier)mBarrier->wait();
+            return;
+        }
+        //分配任务
+        if( !mSrc.empty() )
+        {
+            scope_timer st("main");
+            clear(); //清楚状态
+            int cores = (int)mThread.size();
+            cout << "cores: " << cores << endl;
+            mB2.create(mSrc.rows, mSrc.cols, CV_8UC1);
+            mDes.create(mSrc.rows, mSrc.cols, CV_8UC1);
+            rows = mSrc.rows;
+            cols = mSrc.cols;
+            data = mB2.data;
+            int h = mSrc.rows/cores;
+            for( int i = 0; i < cores;++i )
+            {
+                mSrcs.push_back(mSrc.rowRange(i*h,(i+1)*h));
+                mB2s.push_back(mB2.rowRange(i*h,(i+1)*h));
+                mDess.push_back(mDes.rowRange(i*h,(i+1)*h));
+            }
+            if( mBarrier )mBarrier->wait(); //启动
+            cvtColor(mSrcs[0],mB2s[0],CV_RGBA2GRAY,1);
+            if( mBarrier )mBarrier->wait(); //1
+            adaptiveThreshold(mB2,mDes,255,ADAPTIVE_THRESH_MEAN_C,CV_THRESH_BINARY_INV,11,5);
+            if( mBarrier )mBarrier->wait(); //2
+            deNosie(mDess[0], mB2s[0], 9);
+            if( mBarrier )mBarrier->wait(); //3
+            mProgressFunc(0.1); //开始部分算10%
+            st.escaped("binard denosie");
+            mDess.clear();
+            mB2s.clear();
+            mSrcs.clear();
+            mDes.release(); //释放中间数据
+            /*
+             准备做块处理,使得Rgn()可以并行处理数据
+             */
+            mProgress = 0.1;
+            praperRgnMultiThreadProcess();
+            mDeltaProgress = 0.8/mRgnOffsetPts.size();
+            if( mBarrier )mBarrier->wait(); //4
+            Point2i pt;
+            while( getOffsetPt( pt ) )
+            {
+                threadRgnExpand( pt.x,pt.y );
+                mProgress += mDeltaProgress;
+                mProgressFunc(mProgress);
+            }
+            if( mBarrier )mBarrier->wait(); //5
+            mProgressFunc(0.9); //块部分80%
+            st.escaped("block process");
+            RgnEdge();
+            GuessGrid();
+            st.escaped("edge guess");
+            mProgressFunc(1.0); //最后算10%
+        }
+        //通知完成任务
+        {
+            boost::mutex::scoped_lock lock(mMu2);
+            mMainLoopComplate = true;
+        }
+        mCondition2.notify_one();
+        mMainLoopGo = false;
+    }
+}
+
+void RgnGrid::threadRgn( int i )
+{
+    while(!mExit)
+    {
+        mBarrier->wait(); //启动点
+        if( mExit )return;
+        cvtColor(mSrcs[i],mB2s[i],CV_RGBA2GRAY,1);
+        mBarrier->wait(); //1
+        mBarrier->wait(); //2
+        deNosie(mDess[i], mB2s[i], 9);
+        mBarrier->wait(); //3
+        mBarrier->wait(); //4
+        Point2i pt;
+        while( getOffsetPt( pt ) )
+        {
+            threadRgnExpand( pt.x,pt.y );
+            mProgress += mDeltaProgress;
+            mProgressFunc(mProgress);
+        }
+        mBarrier->wait(); //5
+    }
+}
+
+void RgnGrid::threadRgnExpand( int offx,int offy )
+{
+    for( int y = offy;y<mThread_h;y+=mThread_BlockSize )
+    {
+        for( int x = offx;x<mThread_w;x+=mThread_BlockSize )
+        {
+            RgnExpand(x, y, mThread_BlockSize);
+        }
+    }
+}
+
+bool RgnGrid::getOffsetPt( Point2i& p )
+{
+    boost::mutex::scoped_lock lock(mMutex);
+    if( mOffsetPtsCount == 0 )
+        return false;
+    p = mRgnOffsetPts[--mOffsetPtsCount];
+    return true;
+}
+
+//准备多线程处理数据,好让多个线程同时处理
+void RgnGrid::praperRgnMultiThreadProcess()
+{
+    int w,h,offset,offset_step;
+    /*将数据图像切分成很多小块,根据经验块的大小为较短边长的1%~2%
+     然后对这些块便宜
+     */
+    int block_size = min(cols,rows)/50 + 1;
+    search_block_size = block_size;
+    helf_block_size = block_size/2;
+    w = cols-block_size;
+    h = rows-block_size;
+    offset = block_size/3;
+    offset_step = offset%2==0?offset:offset+1;
+    
+    mRgnOffsetPts.clear();
+    for( int offy = 0;offy<block_size;offy+=offset_step )
+    {
+        for( int offx = 0;offx<block_size;offx+=offset_step )
+        {
+            mRgnOffsetPts.push_back( Point2i(offx,offy) );
+        }
+    }
+    mOffsetPtsCount = (int)mRgnOffsetPts.size();
+    mThread_BlockSize = block_size;
+    mThread_w = w;
+    mThread_h = h;
+}
+
+RgnGrid::~RgnGrid()
+{
+    releaseThread();
+    destoryAllBlock();
+}
+
 void RgnGrid::drawTLPt(Mat& mt,const TLPt& pt )
 {
     int x1,y1;
@@ -79,7 +355,7 @@ void RgnGrid::drawTLPt(Mat& mt,const TLPt& pt )
 void RgnGrid::drawTL(Mat& mt,int type)
 {
     Mat b(rows,cols,CV_8UC1,data);
-    Rgn();
+  //  Rgn();
     
      //绘制TLs
     if( type & 1 )
@@ -225,11 +501,15 @@ void RgnGrid::GuessGrid()
     }
 }
 
-void RgnGrid::End()
+void RgnGrid::clear()
 {
     TLs.clear();
     for(int i=0;i<4;++i)
+    {
         TBorder[i].clear();
+    }
+    CrossPt.clear();
+    destoryAllBlock();
 }
 /* 扩大块尺寸直到不符合条件为止
  */
@@ -431,7 +711,11 @@ void RgnGrid::AddTLPt(TLType type,int x,int y,int size )
             tlpt.angle[0] = my_atan(tlpt.line[1],tlpt.line[0]);
             tlpt.angle[1] = my_atan(tlpt.line[3],tlpt.line[2]);
         }
-        TLs.push_back(tlpt);
+        {
+            boost::mutex::scoped_lock lock(mMutex);
+            //不能同时写入
+            TLs.push_back(tlpt);
+        }
     }
     releaseBlock(bk);
 }
@@ -565,19 +849,31 @@ int RgnGrid::copyBlockFromMain(const uchar* p,uchar* ds,int block_size)
 }
 void RgnGrid::destoryAllBlock()
 {
+/*
+    boost::mutex::scoped_lock lock(mMutex);
+    
     for(vector<uchar*>::iterator i = mRngFreeBlks.begin();i!=mRngFreeBlks.end();++i)
         delete [] *i;
+ */
     mRngFreeBlks.clear();
 }
 //在使用完释放块
 void RgnGrid::releaseBlock( uchar* bk)
 {
-    mRngFreeBlks.push_back(bk);
+    delete [] bk;
+ //   boost::mutex::scoped_lock lock(mMutex);
+    
+ //   mRngFreeBlks.push_back(bk);
 }
 //取得一个空闲的块
 uchar* RgnGrid::getFreeBlock()
 {
+    return new uchar[9*search_block_size*search_block_size];
+    //对于多线程情况如果使用lock,将大大降低性能
+    /*
     uchar *p;
+    boost::mutex::scoped_lock lock(mMutex);
+    
     if( mRngFreeBlks.empty() )
     {
         //分配大点的空间,在扩展时仍然有效
@@ -590,6 +886,7 @@ uchar* RgnGrid::getFreeBlock()
         mRngFreeBlks.pop_back();
     }
     return p;
+     */
 }
 /*
  边上的模式是010,该函数用来确定中间黑色边界点

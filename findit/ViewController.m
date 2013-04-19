@@ -13,6 +13,7 @@ struct RgnConfig gRgnConfig;
 void initRgnConfig()
 {
     gRgnConfig.minWidth = 480;
+    gRgnConfig.mutiCore = true;
 }
 
 @interface ViewController ()
@@ -164,25 +165,59 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
     [super dealloc];
 }
 
+- (void)showProgress:(NSArray*) thresults
+{
+    [thresults retain];
+    NSNumber* v = [thresults objectAtIndex:0];
+    mProgressBar.progress = [v floatValue];
+    [thresults release];
+}
+
 - (void)progress:(float)v
 {
     //单线程允许,保证主线更新进度条
    // NSDate* futureDate = [NSDate dateWithTimeInterval:0.1 sinceDate:[NSDate date]];
    // [[NSRunLoop currentRunLoop] runUntilDate:futureDate];
-    mProgressBar.progress = v;
+   // mProgressBar.progress = v;
+    @autoreleasepool
+    {
+        NSArray* params = [[[NSArray alloc] initWithObjects:[[[NSNumber alloc] initWithFloat:v] autorelease], nil] autorelease];
+        [self performSelectorOnMainThread:@selector(showProgress:) withObject:params waitUntilDone:NO];
+    }
+}
+
+- (void)showMainAction:(NSArray*) thresults
+{
+    [self showAction];
+    [mProgressBar setHidden:true];
+}
+
+- (void)rgnBackground:(NSArray*) theresults
+{
+    UIImage* img;
+    
+    @autoreleasepool
+    {
+        img = [theresults objectAtIndex:0];
+        
+        int minWidth = gRgnConfig.minWidth<=0?img.size.width:gRgnConfig.minWidth;
+        
+        [mRgn rgnIt:img minWidth:minWidth showProgress:self];
+      
+        [self performSelectorOnMainThread:@selector(showMainAction:) withObject:nil waitUntilDone:NO];
+        
+        [theresults release];
+    }
 }
 
 - (void)rgnIt:(UIImage *) img
 {
     if( img )
     {
+        NSArray * param = [[NSArray alloc] initWithObjects:img,nil];
+        
         [mProgressBar setHidden:false];
-        int minWidth = gRgnConfig.minWidth<=0?img.size.width:gRgnConfig.minWidth;
-        [mRgn rgnIt:img minWidth:minWidth showProgress:self];
-        
-        [mProgressBar setHidden:true];
-        
-        [self showAction];
+        [self performSelectorInBackground:@selector(rgnBackground:) withObject:param];
     }
 }
 

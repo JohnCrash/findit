@@ -8,6 +8,7 @@
 
 #import "ConfigViewController.h"
 #import "ViewController.h"
+#include "Rgn.h"
 
 @interface ConfigViewController ()
 
@@ -15,6 +16,7 @@
 
 @implementation ConfigViewController
 @synthesize mWidthSwitch;
+@synthesize mMutiCore;
 @synthesize mWidth;
 
 - (id)initWithNibName:(NSString *)nibNameOrNil bundle:(NSBundle *)nibBundleOrNil
@@ -31,6 +33,7 @@
 {
     [super viewDidLoad];
     mWidth.text = [[NSString alloc] initWithFormat:@"%d",gRgnConfig.minWidth];
+    mMutiCore.on = gRgnConfig.mutiCore;
     //NSLog(@"viewDidLoad");
 	// Do any additional setup after loading the view.
 }
@@ -49,6 +52,16 @@
     } else {
         return YES;
     }
+}
+
+- (IBAction)enableMutiCore:(id)sender
+{
+    if( mMutiCore.on )
+    {
+        gRgnConfig.mutiCore = true;
+    }
+    else
+        gRgnConfig.mutiCore = false;
 }
 
 - (IBAction)enableMinWidth:(id)sender
@@ -95,6 +108,7 @@
 - (void)dealloc {
     [mWidth release];
     [mWidthSwitch release];
+    [mMutiCore release];
     [super dealloc];
 }
 @end
