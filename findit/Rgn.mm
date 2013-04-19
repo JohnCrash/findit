@@ -96,7 +96,11 @@ enum
     
     Mat src;
     CGSize size = [img size];
-    src = CreateMatFromCGImage([img CGImage],width,width*size.height/size.width);
+    
+    src = CreateMatFromCGImage([img CGImage],
+                               width,width*size.height/size.width,
+                               1,
+                               [img imageOrientation]);
     if( src.empty() )
     {
         NSLog(@"CreateMatFromCGImage(%@) return empty Mat",[img description]);

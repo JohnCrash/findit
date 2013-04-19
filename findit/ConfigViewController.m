@@ -102,7 +102,9 @@
 
 - (IBAction)configReturn:(id)sender
 {
-    [self dismissViewControllerAnimated:YES completion:nil];
+    //ios version >= 5.0
+    //[self dismissViewControllerAnimated:YES completion:nil];
+    [self dismissModalViewControllerAnimated:YES];
 }
 
 - (void)dealloc {

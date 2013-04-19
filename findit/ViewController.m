@@ -83,9 +83,12 @@ void initRgnConfig()
     
     UIImagePickerControllerSourceType sourceType = UIImagePickerControllerSourceTypePhotoLibrary;
     
-    if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+    if( b )
     {
-        sourceType = UIImagePickerControllerSourceTypeCamera;
+        if([UIImagePickerController isSourceTypeAvailable:UIImagePickerControllerSourceTypeCamera])
+        {
+            sourceType = UIImagePickerControllerSourceTypeCamera;
+        }
     }
     mImagePicker.sourceType = sourceType;
     mImagePicker.mediaTypes = [UIImagePickerController availableMediaTypesForSourceType:
@@ -263,7 +266,9 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
 //打开配置对话
 - (IBAction)rgnConfigDialog:(id)sender
 {
-    [self presentViewController:mConfigController animated:YES completion:nil];
+    //only ios version >= 5.0
+    //[self presentViewController:mConfigController animated:YES completion:nil];
+    [self presentModalViewController:mConfigController animated:YES];
 }
 
 @end

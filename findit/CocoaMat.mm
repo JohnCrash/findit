@@ -46,14 +46,48 @@ void DrawImageToCGContext(CGImageRef img,CGContextRef cgtx,int width,int height)
     CGContextDrawImage(cgtx, rect, img);
 }
 
-Mat CreateMatFromCGImage(CGImageRef img,int width,int height)
+Mat CreateMatFromCGImage(CGImageRef img,int width,int height,float scale,UIImageOrientation uiio )
 {
     Mat m;
     m.create(height,width,CV_8UC4);
     CGContextRef ctx = CreateBitmapContextFromMat(m);
     if( ctx )
     {
-        DrawImageToCGContext(img, ctx,width,height);
+        CGAffineTransform transform = CGAffineTransformIdentity;
+        int _width,_height;
+        if( uiio == UIImageOrientationLeft )
+        {
+            _width = height;
+            _height = width;
+            transform = CGAffineTransformTranslate(transform, width, 0);
+            transform = CGAffineTransformRotate(transform, CV_PI/2);
+            NSLog(@"OrientationLeft\n");
+        }
+        else if( uiio == UIImageOrientationRight )
+        {
+            _width = height;
+            _height = width;
+            transform = CGAffineTransformTranslate(transform, 0, height);
+            transform = CGAffineTransformRotate(transform, -CV_PI/2);
+            NSLog(@"OrientationRight\n");
+        }
+        else if( uiio == UIImageOrientationDown )
+        {
+            _width = width;
+            _height = height;
+            transform = CGAffineTransformTranslate(transform, width, height);
+            transform = CGAffineTransformRotate(transform, CV_PI);
+            NSLog(@"OrientationDown\n");
+        }
+        else
+        {
+            _width = width;
+            _height = height;
+            NSLog(@"OrientationUp\n");
+        }
+        transform = CGAffineTransformScale(transform, scale, scale);
+        CGContextConcatCTM(ctx, transform);
+        DrawImageToCGContext(img, ctx,_width,_height);
         CGContextRelease(ctx);
     }
     return m;

@@ -10,6 +10,7 @@
 #define findit_CocoaMat_h
 
 #import <Foundation/Foundation.h>
+#import <UIKit/UIKit.h>
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 
@@ -29,7 +30,7 @@ void DrawImageToCGContext(CGImageRef img,CGContextRef cgtx,int width,int height)
 /*
     创建一个宽度和高度为width,height的Mat,缩放img图像到Mat中
  */
-Mat CreateMatFromCGImage(CGImageRef img,int width,int height);
+Mat CreateMatFromCGImage(CGImageRef img,int width,int height,float scale,UIImageOrientation uiio);
 
 /*
     根据m创建一个CGImage,注意m和该CGImage共享数据.
