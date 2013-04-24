@@ -136,12 +136,13 @@ struct TLPt
     
     TLType type; //块类型
     int rank;
+    int fail_rank;
     
     TLPt():x(0),y(0),block_size(0),
-    ox(0),oy(0),m(0),type(TNothing),rank(0)
+    ox(0),oy(0),m(0),type(TNothing),rank(0),fail_rank(0)
     {}
     TLPt(TLType t,int _x,int _y,int bs):
-    type(t),x(_x),y(_y),block_size(bs),rank(0)
+    type(t),x(_x),y(_y),block_size(bs),rank(0),fail_rank(0)
     {}
 };
 

@@ -416,7 +416,7 @@ void RgnGrid::drawTL(Mat& mt,int type)
             x1 = OuterBorder[k][0]*t+OuterBorder[k][2];
             y1 = OuterBorder[k][1]*t+OuterBorder[k][3];
 
-            line(mt,Point(x0,y0),Point(x1,y1),color,1,CV_AA);
+            line(mt,Point(x0,y0),Point(x1,y1),color,2,CV_AA);
         }
      
         for( int k=0;k<4;k++ )
@@ -437,9 +437,9 @@ void RgnGrid::drawTL(Mat& mt,int type)
         for(int i=0;i<19;++i)
         {
             if( i<Edge[0].size() && 18-i<Edge[2].size() )
-                line(mt,Edge[0][i],Edge[2][18-i],Scalar(0,0,255),1,CV_AA);
+                line(mt,Edge[0][i],Edge[2][18-i],Scalar(255,0,0),2,CV_AA);
             if( i<Edge[1].size() && 18-i<Edge[3].size() )
-                line(mt,Edge[1][i],Edge[3][18-i],Scalar(0,0,255),1,CV_AA);
+                line(mt,Edge[1][i],Edge[3][18-i],Scalar(0,0,255),2,CV_AA);
         }
     }
 }
@@ -507,6 +507,9 @@ void RgnGrid::clear()
     for(int i=0;i<4;++i)
     {
         TBorder[i].clear();
+        Edge[i].clear();
+        Corner[i].type = TNothing;
+        Intact[i] = 0;
     }
     CrossPt.clear();
     destoryAllBlock();
@@ -2264,7 +2267,7 @@ bool RgnGrid::isInVP(TLVector& vp,TLPt& pt )
     }
     return false;
 }
-
+//将L型拐角和边上的T型,一一进行测试,看看它们T型的上横线和L到T的连线是否小于阀值tro
 void RgnGrid::LRank(TLPt& pt,float tro)
 {
     assert(pt.type==LTyle);
@@ -2274,6 +2277,8 @@ void RgnGrid::LRank(TLPt& pt,float tro)
         {
             if( isLine(*i,pt,tro) )
                 pt.rank++;
+            else
+                pt.fail_rank++;
         }
     }
     if( pt.m==2||pt.m==3 )
@@ -2282,6 +2287,8 @@ void RgnGrid::LRank(TLPt& pt,float tro)
         {
             if( isLine(*i,pt,tro) )
                 pt.rank++;
+            else
+                pt.fail_rank++;
         }
     }
     if( pt.m==3||pt.m==4 )
@@ -2290,6 +2297,8 @@ void RgnGrid::LRank(TLPt& pt,float tro)
         {
             if( isLine(*i,pt,tro) )
                 pt.rank++;
+            else
+                pt.fail_rank++;
         }
     }
     if( pt.m==4||pt.m==1 )
@@ -2298,6 +2307,8 @@ void RgnGrid::LRank(TLPt& pt,float tro)
         {
             if( isLine(*i,pt,tro) )
                 pt.rank++;
+            else
+                pt.fail_rank++;
         }
     }
 }
@@ -2648,14 +2659,24 @@ bool RgnGrid::setCorner(int i,Vec4f L0,Vec4f L1)
         Corner[i-1].line[2] = L1[0];
         Corner[i-1].line[3] = L1[1];
         return true;
-   }
+    }
     else
     { //检测,看看两者的距离有多大
         Point2f p2;
         p2.x = Corner[i-1].ox;
         p2.y = Corner[i-1].oy;
-        if( distance2(p, p2)<search_block_size )
+        float dis = distance2(p, p2);
+        if( dis<search_block_size )
             return true;
+        //如果使用LRank选择出来的L拐点和使用边线求交得到的L拐点不一致时
+        //进一步看看L拐点的失败次数
+        if( Corner[i-1].fail_rank > Corner[i-1].rank )
+        {
+            //将不采纳LRank算法的到的拐点
+            //通过边线重新计算L拐点
+            Corner[i-1].type = TNothing;
+            return setCorner(i, L0, L1 );
+        }
     }
     return false;
 }
