@@ -2127,7 +2127,7 @@ bool RgnGrid::VPS(vector<TLVector>& vps,TLPt& pt,float tro)
             else err++;
         }
   //      if( tc>err/2 ) //如果共线的次数大于不共线的一半
-        if( tc>2*err )
+        if( tc>err )
         {
             i->push_back(pt);
             return true;
@@ -2164,6 +2164,18 @@ static float Subdot(float p1[2],float p2[2])
 {
     return sqrt((p2[0]-p1[0])*(p2[0]-p1[0])+(p2[1]-p1[1])*(p2[1]-p1[1]));
 }
+/*
+//找到vp的两个端点返回
+static Vec4f segment(const TLVector& vp)
+{
+}
+//线段seg1,和线段seg2,比较角度>tro返回false
+//<tro的交点在两线段内部的返回true
+static bool isSegLine(Vec4f seg1,Vec4f seg2,float tro)
+{
+    return false;
+}
+ */
 /*对边edge进行挑选
     首先将共线点进行分类,然后挑选最佳的分类
     最后对重复的点进行合并
@@ -2203,8 +2215,28 @@ void RgnGrid::SelectEdge(list<TLPt>& edge,vector<TLVector>& vps,float tro,int bs
     }
     
     edge.clear();
-
-    //对全部的T型边分类进行合并
+    /*
+     对那些因为镜头的畸变导致的分类进行合并,它们共同点是T型分组的匹配直线之间角度较小.
+     同时交点在两个T型边上.将符合上面特点的T型边合并.
+     */
+    //暂时没有增加
+    /*
+    for(int i=0;i<vps.size();++i )
+    {
+        for(int j=i+1;j<vps.size();++j)
+        {
+            if( vps.at(i).size()>1 && vps.at(j).size()>1 )
+            {
+                Vec4f seg1 = segment(vps.at(i));
+                Vec4f seg2 = segment(vps.at(j));
+                if( isSegLine(seg1,seg2,3*tro) )
+                {
+                    //合并
+                }
+            }
+        }
+    }*/
+    //对全部的T型边分类进行合并,该合并指的是在一条T型边中靠的非常近的点.
     for( int i = 0;i < vps.size();++i )
     {
         int m = 0;
@@ -2366,6 +2398,91 @@ static bool size_px(const TLVector& p1,const TLVector& p2)
 {
     return p1.size() > p2.size();
 }
+//返回T型边的两个最外侧点,组成一个线段返回
+//假设v是经过排序的
+static Vec4i segment_pt(const TLVector& v)
+{
+    Vec4i p;
+    p[0] = v.at(0).ox;
+    p[1] = v.at(0).oy;
+    p[2] = v.at(v.size()-1).ox;
+    p[3] = v.at(v.size()-1).oy;
+    return p;
+}
+//seg是一个线段的两个顶点
+//测试p1,p2在seg上(true),或者在seg外(false)
+//b=true横向,b=false纵向
+static bool inSegment(Vec4i seg,Point2f p1,Point2f p2,bool b)
+{
+    float mx,mi;
+    if(b)
+    {
+        mx = max(seg[0],seg[2]);
+        mi = min(seg[0],seg[2]);
+        if(p1.x > mi && p1.x < mx &&
+           p2.x > mi && p2.x < mx )
+            return true;
+    }
+    else
+    {
+        mx = max(seg[1],seg[3]);
+        mi = min(seg[1],seg[3]);
+        if(p1.y > mi && p1.y < mx &&
+           p2.y > mi && p2.y < mx )
+            return true;
+    }
+    return false;
+}
+/*
+    计算四条T型边的组合评价值,越高越好,不能达成返回-2
+    评价主要考虑,1等边性,四条边越是相等分值越高.
+ */
+int RgnGrid::clac_match_value(const TLVector& v1,const TLVector& v2,
+                            const TLVector& v3,const TLVector& v4)
+{
+    if( v1.size()<2||v2.size()<2||v3.size()<2||v4.size()<2 )
+        return -2;
+    Vec4i p1 = segment_pt(v1);
+    Vec4i p2 = segment_pt(v2);
+    Vec4i p3 = segment_pt(v3);
+    Vec4i p4 = segment_pt(v4);
+    Vec4f L1,L2,L3,L4; //4条直线
+    buildLine(&p1[0],&p1[2],L1);
+    buildLine(&p2[0],&p2[2],L2);
+    buildLine(&p3[0],&p3[2],L3);
+    buildLine(&p4[0],&p4[2],L4);
+    Point2f pt1,pt2,pt3,pt4; //4个交点
+    pt1 = Cross(L1,L4);
+    pt2 = Cross(L1,L2);
+    pt3 = Cross(L2,L3);
+    pt4 = Cross(L3,L4);
+    float l1,l2,l3,l4; //四条边长
+    l1 = distance2(pt1, pt2);
+    l2 = distance2(pt2, pt3);
+    l3 = distance2(pt3, pt4);
+    l4 = distance2(pt4, pt1);
+    /*
+        使用最短的那根当1,来计算其他的差值.然后除18(一个等边权重)
+        当然数量T型点数量也是一个考虑因素
+        负面的评价,如果一条直线,穿越其他的线段中间.将导致评价值降低
+     p1-l1--p2
+     |      |
+     l4     l2
+     |      |
+     p4-l3--p3
+     */
+    //这里不做复杂的计算,而是简单的看看交点在线段内还是在线段外.
+    //在线段内返回true,在线段外返回false
+    bool b1 = inSegment(p1,pt1,pt2,true);
+    bool b2 = inSegment(p2,pt2,pt3,false);
+    bool b3 = inSegment(p3,pt3,pt4,true);
+    bool b4 = inSegment(p4,pt1,pt4,false);
+    float l_min = min(min(min(l1,l2),l3),l4);
+    float va = (l1-l_min)/l_min+(l2-l_min)/l_min+(l3-l_min)/l_min+(l4-l_min)/l_min;
+    float vb = (b1?36:0) + (b2?36:0) + (b3?36:0) + (b4?36:0);
+    float v = 18/va>156?156:18/va + v1.size()+v2.size()+v3.size()+v4.size() - vb;
+    return (int)v;
+}
 /*
     已知TBorders,找到最佳的4条T型边.
  */
@@ -2405,6 +2522,7 @@ void RgnGrid::MatchEdge(list<TLPt> edge[4])
         sort(TBorders[i].begin(),TBorders[i].end(),size_px);
     }
     /*
+     //该算法仅仅将最多的边当最佳
     for(int i=0;i<4;++i)
     {
         edge[i].clear();
@@ -2414,6 +2532,57 @@ void RgnGrid::MatchEdge(list<TLPt> edge[4])
             copy(TBorders[i].at(0).begin(),TBorders[i].at(0).end(),edge[i].begin());
         }
     }*/
+    //
+    int i_max,j_max,k_max,s_max;
+    int value = -1;
+    for(int i=0;i<TBorders[0].size();++i)
+    {
+        for(int j=0;j<TBorders[1].size();++j)
+        {
+            for(int k=0;k<TBorders[2].size();++k)
+            {
+                for(int s=0;s<TBorders[3].size();++s)
+                {
+                    //计算评价值
+                    int v = clac_match_value(TBorders[0].at(i),TBorders[1].at(j),
+                                             TBorders[2].at(k),TBorders[3].at(s));
+                    if( v > value )
+                    {
+                        value = v;
+                        i_max = i;
+                        j_max = j;
+                        k_max = k;
+                        s_max = s;
+                    }
+                }
+            }
+        }
+    }
+    if( value != -1 )
+    { //将最大评级的边复制到edge中去
+        for(int i=0;i<4;++i)
+            edge[i].clear();
+        edge[0].resize(TBorders[0].at(i_max).size());
+        copy(TBorders[0].at(i_max).begin(),TBorders[0].at(i_max).end(),edge[0].begin());
+        edge[1].resize(TBorders[1].at(j_max).size());
+        copy(TBorders[1].at(j_max).begin(),TBorders[1].at(j_max).end(),edge[1].begin());
+        edge[2].resize(TBorders[2].at(k_max).size());
+        copy(TBorders[2].at(k_max).begin(),TBorders[2].at(k_max).end(),edge[2].begin());
+        edge[3].resize(TBorders[3].at(s_max).size());
+        copy(TBorders[3].at(s_max).begin(),TBorders[3].at(s_max).end(),edge[3].begin());
+    }
+    else
+    { //没找到匹配返回最多的边
+        for(int i=0;i<4;++i)
+        {
+            edge[i].clear();
+            if( !TBorders[i].at(0).empty() )
+            {
+                edge[i].resize(TBorders[i].at(0).size());
+                copy(TBorders[i].at(0).begin(),TBorders[i].at(0).end(),edge[i].begin());
+            }
+        }
+    }
 }
 /*
   使用角度阀值进行选择.

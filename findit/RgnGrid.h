@@ -318,6 +318,8 @@ protected:
     bool isInVP(TLVector& vp,TLPt& pt );
     bool VPS(vector<TLVector>& vps,TLPt& pt,float tro);
     bool isLine(const TLPt& pt0,const TLPt& pt1,float tro) const;
+    int clac_match_value(const TLVector& v1,const TLVector& v2,
+                                  const TLVector& v3,const TLVector& v4);
     void SelectMatch(float tro);
     void SelectEdge(list<TLPt>& edge,vector<TLVector>& vps,float tro,int bs);
     void addCornerV2i(vector<Vec2i>& tlp,int m);
