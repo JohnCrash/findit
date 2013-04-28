@@ -352,6 +352,18 @@ void RgnGrid::drawTLPt(Mat& mt,const TLPt& pt )
     }
 }
 
+static void draw_v4f(Mat& mt,Vec4f v4f,Scalar color)
+{
+    int x0,y0,x1,y1;
+    float t = -1000;
+    x0 = v4f[0]*t+v4f[2];
+    y0 = v4f[1]*t+v4f[3];
+    t = 1000;
+    x1 = v4f[0]*t+v4f[2];
+    y1 = v4f[1]*t+v4f[3];
+    
+    line(mt,Point(x0,y0),Point(x1,y1),color,2,CV_AA);
+}
 void RgnGrid::drawTL(Mat& mt,int type)
 {
     Mat b(rows,cols,CV_8UC1,data);
@@ -408,15 +420,7 @@ void RgnGrid::drawTL(Mat& mt,int type)
                 drawTLPt(mt,*i);
             }
             drawTLPt(mt,Corner[k]);
-            int x0,y0,x1,y1;
-            float t = -1000;
-            x0 = OuterBorder[k][0]*t+OuterBorder[k][2];
-            y0 = OuterBorder[k][1]*t+OuterBorder[k][3];
-            t = 1000;
-            x1 = OuterBorder[k][0]*t+OuterBorder[k][2];
-            y1 = OuterBorder[k][1]*t+OuterBorder[k][3];
-
-            line(mt,Point(x0,y0),Point(x1,y1),color,2,CV_AA);
+            draw_v4f(mt,OuterBorder[k],color);
         }
      
         for( int k=0;k<4;k++ )
@@ -440,6 +444,46 @@ void RgnGrid::drawTL(Mat& mt,int type)
                 line(mt,Edge[0][i],Edge[2][18-i],Scalar(255,0,0),2,CV_AA);
             if( i<Edge[1].size() && 18-i<Edge[3].size() )
                 line(mt,Edge[1][i],Edge[3][18-i],Scalar(0,0,255),2,CV_AA);
+        }
+    }
+    //仅仅绘制T点
+    if( type & 8 )
+    {
+        for( int k=0;k<4;k++ )
+        {
+            Scalar color;
+            if( k == 0)
+                color = Scalar(255,0,0);
+            else if( k ==1 )
+                color = Scalar(0,0,255);
+            else if( k == 2 )
+                color = Scalar(0,255,0);
+            else
+                color = Scalar(255,255,0);
+            for(int i=0;i<TBorders[k].size();++i)
+            {
+                Vec2i v2i;
+                vector<Vec2i> vp;
+
+                for(int j=0;j<TBorders[k].at(i).size();++j)
+                {
+                    drawTLPt(mt,TBorders[k].at(i).at(j));
+                    v2i[0] = TBorders[k].at(i).at(j).ox;
+                    v2i[1] = TBorders[k].at(i).at(j).oy;
+                    vp.push_back(v2i);
+                }
+                Vec4f v4f;
+                if( vp.size()>1 )
+                {
+                    fitLine(vp,v4f,CV_DIST_L1,0,0,0);
+                    draw_v4f(mt,v4f,color);
+                }
+                vp.clear();
+            }
+          //  for(TLVector::iterator i=TBorder[k].begin();i!=TBorder[k].end();++i )
+          //  {
+          //      drawTLPt(mt,*i);
+          //  }
         }
     }
 }
@@ -506,6 +550,7 @@ void RgnGrid::clear()
     TLs.clear();
     for(int i=0;i<4;++i)
     {
+        TBorders[i].clear();
         TBorder[i].clear();
         Edge[i].clear();
         Corner[i].type = TNothing;
@@ -2031,7 +2076,7 @@ static bool angle_tro(float a0,float a1,float tro)
     float v = abs(a1-a0);
     return (v<=CV_PI/2)?(v < tro):(CV_PI-v)<tro;
 }
-
+//判断pt0于pt1是否共线
 bool RgnGrid::isLine(const TLPt& pt0,const TLPt& pt1,float tro) const
 {
     float ang = my_atan(pt1.oy-pt0.oy,pt1.ox-pt0.ox);
@@ -2060,7 +2105,10 @@ bool RgnGrid::isLine(const TLPt& pt0,const TLPt& pt1,float tro) const
     }
     return false;
 }
-
+/*
+    vps表示多个共线组,每一个vps项都是一个共线点的列表.
+    函数VPS,将pt和vps中的不同分组进行共线比较.如果发现合适就返回true,否则返回false
+ */
 bool RgnGrid::VPS(vector<TLVector>& vps,TLPt& pt,float tro)
 {
     for(vector<TLVector>::iterator i=vps.begin();i!=vps.end();++i )
@@ -2078,7 +2126,8 @@ bool RgnGrid::VPS(vector<TLVector>& vps,TLPt& pt,float tro)
             }
             else err++;
         }
-        if( tc>err/2 )
+  //      if( tc>err/2 ) //如果共线的次数大于不共线的一半
+        if( tc>2*err )
         {
             i->push_back(pt);
             return true;
@@ -2118,11 +2167,16 @@ static float Subdot(float p1[2],float p2[2])
 /*对边edge进行挑选
     首先将共线点进行分类,然后挑选最佳的分类
     最后对重复的点进行合并
+ 
+ edge,vps,是返回的数据,edge是最多的T型边.vps是全部分组.
 */
-void RgnGrid::SelectEdge(list<TLPt>& edge,float tro,int bs)
+void RgnGrid::SelectEdge(list<TLPt>& edge,vector<TLVector>& vps,float tro,int bs)
 {
-    vector<TLVector> vps;
+   // vector<TLVector> vps;
     TLVector vtmp;
+    /*
+      vps 是一个列表,每一项存储一组共线点(使用isLine判断出来的)
+     */
     list<TLPt>::iterator cur = edge.begin();
     while(cur!=edge.end())
     {
@@ -2130,6 +2184,7 @@ void RgnGrid::SelectEdge(list<TLPt>& edge,float tro,int bs)
         {//没有在存在的类中发现
             list<TLPt>::iterator next = cur;
             next++;
+            //从当前位置向后查找,直到发现一个共线点(isLine判断的)
             for(list<TLPt>::iterator it=next;it!=edge.end();++it)
             {
                 if( isLine(*cur, *it, tro) )
@@ -2148,47 +2203,41 @@ void RgnGrid::SelectEdge(list<TLPt>& edge,float tro,int bs)
     }
     
     edge.clear();
-    int max_value = 0;
-    int max_index = -1;
-    int m = -1;
-    //找到最佳匹配
-    for( vector<TLVector>::iterator i=vps.begin();i!=vps.end();++i )
+
+    //对全部的T型边分类进行合并
+    for( int i = 0;i < vps.size();++i )
     {
-        int value = 0;
-        for( TLVector::iterator j=i->begin();j!=i->end();++j )
+        int m = 0;
+        for( TLVector::iterator k=vps.at(i).begin();k!=vps.at(i).end();++k )
         {
-            if( j->type == LTyle )
-                value+=5;
-            else
-                value++;
+            if( k->type==TTyle )
+                m = k->m; //的到方位类型
+            vtmp.push_back(*k);
         }
-        if( value > max_value )
+        
+        //合并重复点
+        if( m==1 || m==3 )
         {
-            max_value = value;
-            max_index = (int)(i-vps.begin());
+            PtSelect(vtmp,edge,bs,true);
         }
+        else if( m==2 || m==4 )
+        {
+            PtSelect(vtmp,edge,bs,false);
+        }
+        //合并完成的点重新放入到vps中去
+        vps.at(i).clear();
+        for(list<TLPt>::iterator it = edge.begin();it!=edge.end();++it)
+        {
+            vps.at(i).push_back(*it);
+        }
+        vtmp.clear();
+        edge.clear();
     }
-    if( max_index>= 0 )
-    for( TLVector::iterator k=vps.at(max_index).begin();k!=vps.at(max_index).end();++k )
-    {
-        if( k->type==TTyle )
-            m = k->m;
-        vtmp.push_back(*k);
-    }
-    //合并重复点
-    if( m==1 || m==3 )
-    {
-        PtSelect(vtmp,edge,bs,true);
-    }
-    else if( m==2 || m==4 )
-    {
-        PtSelect(vtmp,edge,bs,false);
-    }
-//    for(TLVector::iterator i = vtmp.begin();i!=vtmp.end();++i)
-//        edge.push_back(*i);
 }
 /*
- vtmp中靠近的点进行提取那个最佳的到edge中
+    vtmp中靠近的点进行提取那个最佳的到edge中
+    vtmp中包含作一条边的T型点和L型点.它们有些非常靠近,其实是相同的点.
+    b代表对横向或者纵向的选择
  */
 void RgnGrid::PtSelect(vector<TLPt>& vtmp,list<TLPt>& edge,int bs,bool b)
 {
@@ -2312,6 +2361,60 @@ void RgnGrid::LRank(TLPt& pt,float tro)
         }
     }
 }
+
+static bool size_px(const TLVector& p1,const TLVector& p2)
+{
+    return p1.size() > p2.size();
+}
+/*
+    已知TBorders,找到最佳的4条T型边.
+ */
+void RgnGrid::MatchEdge(list<TLPt> edge[4])
+{
+    /*
+     //该算法仅仅将最多的边当最佳
+    for(int i=0;i<4;++i)
+    {
+        int max_size = -1;
+        int max_index = -1;
+        edge[i].clear();
+        for(int j=0;j<TBorders[i].size();++j)
+        {
+            if( max_size < (int)TBorders[i].at(j).size() )
+            {
+                max_size = (int)TBorders[i].at(j).size();
+                max_index = j;
+            }
+        }
+        if( max_index>=0 )
+        {
+            for(int k=0;k<TBorders[i].at(max_index).size();++k)
+                edge[i].push_back(TBorders[i].at(max_index).at(k));
+        }
+    }
+     */
+    /*
+        将每条边的分组进行组合,然后评价,得出评价值.取得评价最高的组合返回
+        评价值计算方法:将组合的T型边匹配直线求出,然后用这些直线分割其他三条边,
+        正常情况下分割结果是这些T型点都在一侧.如果它们分布在两侧将被视为不正确.
+        以此为依据来计算评价值. (如果评价值相同取T型边数量较多者.)
+     */
+    //确保TBorders按从多到少的顺序进行排序
+    for(int i=0;i<4;++i)
+    {
+        sort(TBorders[i].begin(),TBorders[i].end(),size_px);
+    }
+    /*
+    for(int i=0;i<4;++i)
+    {
+        edge[i].clear();
+        if( !TBorders[i].at(0).empty() )
+        {
+            edge[i].resize(TBorders[i].at(0).size());
+            copy(TBorders[i].at(0).begin(),TBorders[i].at(0).end(),edge[i].begin());
+        }
+    }*/
+}
 /*
   使用角度阀值进行选择.
     方法如下:考虑同侧边应该在一条直线上,对同侧进行分类.然后挑出最佳的那条
@@ -2340,8 +2443,14 @@ void RgnGrid::SelectMatch(float tro)
                     edge[m-1].push_back(*i);
             }
         }
-        SelectEdge(edge[m-1],tro,search_block_size);
+        SelectEdge(edge[m-1],TBorders[m-1],tro,search_block_size);
     }
+    //匹配出最佳的边
+    MatchEdge(edge);
+    /*
+        上面对TBorders进行了填充,TBorders其中包括了每条表的所有可能T型边.
+        下面找出最佳的匹配4条T型边,填充到edge中去.
+     */
     TLVector ls[4];
     //对L型进行选择
     for(int m=1;m<=4;++m )

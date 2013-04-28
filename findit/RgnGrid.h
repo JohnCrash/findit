@@ -146,6 +146,7 @@ struct TLPt
     {}
 };
 
+typedef vector<TLPt> TLVector;
 typedef boost::function<void (float)> ProgressFunc;
 
 class RgnGrid
@@ -207,7 +208,6 @@ protected:
     int search_block_size;
     int helf_block_size;
     
-    typedef vector<TLPt> TLVector;
     TLVector TLs;
     
     bool isInTLs(int x,int y,int size);
@@ -319,12 +319,13 @@ protected:
     bool VPS(vector<TLVector>& vps,TLPt& pt,float tro);
     bool isLine(const TLPt& pt0,const TLPt& pt1,float tro) const;
     void SelectMatch(float tro);
-    void SelectEdge(list<TLPt>& edge,float tro,int bs);
+    void SelectEdge(list<TLPt>& edge,vector<TLVector>& vps,float tro,int bs);
     void addCornerV2i(vector<Vec2i>& tlp,int m);
-    
+    void MatchEdge(list<TLPt> edge[4]);
     Vec4f OuterBorder[4]; //外边框直线
     TLPt Corner[4]; //是个角点
-    TLVector TBorder[4]; //T型边
+    vector<TLVector> TBorders[4]; //全部T型边分组.
+    TLVector TBorder[4]; //T型边,匹配好的T形边变
     TLVector CrossPt; //C型点
     int Intact[4];
     bool Guess();

@@ -232,8 +232,10 @@ didFinishPickingMediaWithInfo:(NSDictionary *)info
         level = 1;
     else if( [mRgnShowType selectedSegmentIndex] == 1 )
         level = 2;
-    else
+    else if( [mRgnShowType selectedSegmentIndex] == 2 )
         level = 4;
+    else
+        level = 8;
     if( [mRgnBackground selectedSegmentIndex] == 0 )
         type = 0;
     else
