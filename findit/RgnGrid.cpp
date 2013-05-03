@@ -2080,7 +2080,10 @@ static bool angle_tro(float a0,float a1,float tro)
     return (v<=CV_PI/2)?(v < tro):(CV_PI-v)<tro;
 }
 //判断pt0于pt1是否共线
-bool RgnGrid::isLine(const TLPt& pt0,const TLPt& pt1,float tro) const
+//返回0不共线的
+//共线的话分别返回1,2,3,4分别代表,直线(0,0)共线,(0,1),(1,0),(1,1)
+//每种点有两条对应的直线,(0,0)是第一条和第一条...
+int RgnGrid::isLine(const TLPt& pt0,const TLPt& pt1,float tro) const
 {
     float ang = my_atan(pt1.oy-pt0.oy,pt1.ox-pt0.ox);
     if( pt0.type==TTyle && pt1.type==TTyle )

@@ -123,8 +123,8 @@ struct TLPt
     
     int ox;
     int oy; //LT的交点坐标
-    /*两条直线的sin,cos,直线和点ox,oy构成直线方程
-     T型1条直线是T上的横梁,第二条直线是下面的竖线
+    /*两条直线的cos,sin,直线和点ox,oy构成直线方程
+     T型第一条直线是T上的横梁,第二条直线是下面的竖线
      */
     float line[4];
     float angle[2]; //两条直线的角度
@@ -317,7 +317,7 @@ protected:
     void LRank(TLPt& pt,float tro);
     bool isInVP(TLVector& vp,TLPt& pt );
     bool VPS(vector<TLVector>& vps,TLPt& pt,float tro);
-    bool isLine(const TLPt& pt0,const TLPt& pt1,float tro) const;
+    int isLine(const TLPt& pt0,const TLPt& pt1,float tro) const;
     int clac_match_value(const TLVector& v1,const TLVector& v2,
                                   const TLVector& v3,const TLVector& v4);
     bool hasTPtOutAndRemove();
