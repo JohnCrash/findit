@@ -553,9 +553,12 @@ void RgnGrid::clear()
         TBorders[i].clear();
         TBorder[i].clear();
         Edge[i].clear();
-        Corner[i].type = TNothing;
+        Corner[i].type = TNothing; //清除角点
         Intact[i] = 0;
     }
+    LLPts.clear();
+    LL[0].clear();
+    LL[1].clear();
     CrossPt.clear();
     destoryAllBlock();
 }
@@ -2585,8 +2588,75 @@ void RgnGrid::MatchEdge(list<TLPt> edge[4])
     }
 }
 /*
+    如果TBorder边上的点在匹配出来的直线OuterBorder组成的矩形外面,删除这些外面的点
+    然后返回true.
+*/
+bool RgnGrid::hasTPtOutAndRemove()
+{
+    //如果不完整直接返回false
+    for(int i=0;i<4;++i)
+        if(Intact[i]==1)return false;
+    Point2f pt[4];
+    pt[0] = Cross(OuterBorder[0],OuterBorder[3]);
+    pt[1] = Cross(OuterBorder[0],OuterBorder[1]);
+    pt[2] = Cross(OuterBorder[1],OuterBorder[2]);
+    pt[3] = Cross(OuterBorder[2],OuterBorder[3]);
+    bool b = false;
+    //上横线
+    for(TLVector::iterator it=TBorder[0].begin();it!=TBorder[0].end();)
+    {
+        int x = it->ox;
+        if( x > pt[1].x || x < pt[0].x )
+        {
+            b = true;
+            it = TBorder[0].erase(it);
+        }
+        else
+            ++it;
+    }
+    //下横线
+    for(TLVector::iterator it=TBorder[2].begin();it!=TBorder[2].end();)
+    {
+        int x = it->ox;
+        if( x > pt[2].x || x < pt[3].x )
+        {
+            b = true;
+            it = TBorder[2].erase(it);
+        }
+        else
+            ++it;
+    }
+    //左竖线
+    for(TLVector::iterator it=TBorder[3].begin();it!=TBorder[3].end();)
+    {
+        int y = it->oy;
+        if( y > pt[3].y || y < pt[0].y )
+        {
+            b = true;
+            it = TBorder[3].erase(it);
+        }
+        else
+            ++it;
+    }
+    //右竖线
+    for(TLVector::iterator it=TBorder[1].begin();it!=TBorder[1].end();)
+    {
+        int y = it->oy;
+        if( y > pt[2].y || y < pt[1].y )
+        {
+            b = true;
+            it = TBorder[1].erase(it);
+        }
+        else
+            ++it;
+    }    
+    return b;
+}
+/*
   使用角度阀值进行选择.
     方法如下:考虑同侧边应该在一条直线上,对同侧进行分类.然后挑出最佳的那条
+    函数用来确定TBorder,Intact,OuterBorder
+    该函数的一个问题是没有利用十字型点信息.仅仅靠T型点进行处理.
  */
 void RgnGrid::SelectMatch(float tro)
 {
@@ -2663,56 +2733,62 @@ void RgnGrid::SelectMatch(float tro)
     /*
      匹配外轮廓线,4条线
      */
-    for(int m=1;m<=4;++m )
-    {
-        Vec2i v2i;
-        vector<Vec2i> tlp;
-        for(TLVector::iterator i=TBorder[m-1].begin();i!=TBorder[m-1].end();++i)
+    int loopc = 0;
+    do{
+        for(int m=1;m<=4;++m )
         {
-            v2i[0] = i->ox;
-            v2i[1] = i->oy;
-            tlp.push_back(v2i);
+            Vec2i v2i;
+            vector<Vec2i> tlp;
+            for(TLVector::iterator i=TBorder[m-1].begin();i!=TBorder[m-1].end();++i)
+            {
+                v2i[0] = i->ox;
+                v2i[1] = i->oy;
+                tlp.push_back(v2i);
+            }
+            //加入定点
+            if( m==1 )
+            {
+                addCornerV2i(tlp,1);
+                addCornerV2i(tlp,2);
+            }
+            else if(m==2)
+            {
+                addCornerV2i(tlp,2);
+                addCornerV2i(tlp,3);
+            }
+            else if(m==3)
+            {
+                addCornerV2i(tlp,3);
+                addCornerV2i(tlp,4);
+            }
+            else
+            {
+                addCornerV2i(tlp,4);
+                addCornerV2i(tlp,1);
+            }
+            OuterBorder[m-1][0] = 0;
+            OuterBorder[m-1][1] = 0;
+            OuterBorder[m-1][2] = 0;
+            OuterBorder[m-1][3] = 0;
+            if(tlp.size()>=2)
+            {
+                Intact[m-1] = 0;
+                fitLine(tlp, OuterBorder[m-1], CV_DIST_L1, 0, 0, 0);
+            }
+            else
+                Intact[m-1] = 1;
+            tlp.clear();
         }
-        //加入定点
-        if( m==1 )
-        {
-            addCornerV2i(tlp,1);
-            addCornerV2i(tlp,2);
-        }
-        else if(m==2)
-        {
-            addCornerV2i(tlp,2);
-            addCornerV2i(tlp,3);
-        }
-        else if(m==3)
-        {
-            addCornerV2i(tlp,3);
-            addCornerV2i(tlp,4);
-        }
-        else
-        {
-            addCornerV2i(tlp,4);
-            addCornerV2i(tlp,1);
-        }
-        OuterBorder[m-1][0] = 0;
-        OuterBorder[m-1][1] = 0;
-        OuterBorder[m-1][2] = 0;
-        OuterBorder[m-1][3] = 0;
-        if(tlp.size()>=2)
-        {
-            Intact[m-1] = 0;
-            fitLine(tlp, OuterBorder[m-1], CV_DIST_L1, 0, 0, 0);
-        }
-        else
-            Intact[m-1] = 1;
-        tlp.clear();
+        ++loopc;
     }
+    //下面的代码解决这样的问题,如果有些T点在匹配出来的四条边的外面,删除这些点然后在重新匹配.
+    while(loopc<2&&hasTPtOutAndRemove());
     /*
         对十字型点相同点进行合并,放入CrossPt中
      */
     for(TLVector::iterator q=TLs.begin();q!=TLs.end();++q)
     {
-        if(!isInCrossPt(*q))
+        if(q->type==CTyle&&!isInCrossPt(*q))
             CrossPt.push_back(*q);
     }
 }
@@ -2727,6 +2803,40 @@ bool RgnGrid::isInCrossPt(TLPt& pt)
         }
     }
     return false;
+}
+/*
+    类似于SelectMatch,但是使用的数据和方法不同.
+    SelectMatch2采用发现十字型点和T型点的方法进行.考虑一组共线的T型点和十字型点.
+    T型点定位边界,十字型点定位分割线.从而可以推测出包围线和上面的等距点.
+    而SelectMatch仅仅使用T型点的信息.
+    考虑到SelectMatch已经做的工作.数据来源T型点从TBorders中引入,十字点从CrossPt中引入
+    同样输出一组边OuterBorder直线.
+ */
+void RgnGrid::SelectMatch2(float tro)
+{
+    //先将点都收集到LLPts中去
+    for(TLVector::iterator it=CrossPt.begin();it!=CrossPt.end();++it)
+        LLPts.push_back(*it);
+    for(int i=0;i<4;++i)
+    {
+        for(vector<TLVector>::iterator it=TBorders[i].begin();it!=TBorders[i].end();++it)
+            for(TLVector::iterator j=it->begin();j!=it->end();++j)
+                LLPts.push_back(*j);
+        //将4个角补上
+        if(Corner[i].type!=TNothing)
+            LLPts.push_back(Corner[i]);
+    }
+    //下面将分析出经纬线来,LL[0]是竖线,LL[1]是横线,它们都LLPts中的点的索引值
+    for(TLVector::iterator it=LLPts.begin();it!=LLPts.end();++it)
+    {
+        for(TLVector::iterator j=it+1;j!=LLPts.end();++j)
+        {
+            if( isLine(*it,*j,tro) )
+            {
+                
+            }
+        }
+    }
 }
 void RgnGrid::addCornerV2i(vector<Vec2i>& tlp,int m)
 {

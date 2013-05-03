@@ -320,7 +320,9 @@ protected:
     bool isLine(const TLPt& pt0,const TLPt& pt1,float tro) const;
     int clac_match_value(const TLVector& v1,const TLVector& v2,
                                   const TLVector& v3,const TLVector& v4);
+    bool hasTPtOutAndRemove();
     void SelectMatch(float tro);
+    void SelectMatch2(float tro);
     void SelectEdge(list<TLPt>& edge,vector<TLVector>& vps,float tro,int bs);
     void addCornerV2i(vector<Vec2i>& tlp,int m);
     void MatchEdge(list<TLPt> edge[4]);
@@ -329,6 +331,8 @@ protected:
     vector<TLVector> TBorders[4]; //全部T型边分组.
     TLVector TBorder[4]; //T型边,匹配好的T形边变
     TLVector CrossPt; //C型点
+    vector<TLPt> LLPts; //参见Selectmatch2
+    vector<vector<int> > LL[2];
     int Intact[4];
     bool Guess();
     bool GuessIncomplete(int type);
