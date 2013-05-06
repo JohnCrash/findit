@@ -531,6 +531,7 @@ void RgnGrid::Rgn()
 void RgnGrid::RgnEdge()
 {
     SelectMatch(5*CV_PI/180);
+    SelectMatch2(5*CV_PI/180);
 }
 
 void RgnGrid::GuessGrid()
@@ -2088,28 +2089,69 @@ int RgnGrid::isLine(const TLPt& pt0,const TLPt& pt1,float tro) const
     float ang = my_atan(pt1.oy-pt0.oy,pt1.ox-pt0.ox);
     if( pt0.type==TTyle && pt1.type==TTyle )
     {
-        return angle_tro(ang,pt0.angle[0],tro)&&angle_tro(ang,pt1.angle[0],tro);
+        if( angle_tro(ang,pt0.angle[0],tro)&&angle_tro(ang,pt1.angle[0],tro) )
+            return 1;
+        else if(angle_tro(ang,pt0.angle[1],tro)&&angle_tro(ang,pt1.angle[1],tro))
+            return 4;
     }
     else if( pt0.type==TTyle && pt1.type==LTyle )
     {
-        return angle_tro(ang,pt0.angle[0],tro)&&
-        (angle_tro(ang,pt1.angle[0],tro)||
-         angle_tro(ang,pt1.angle[1],tro));
+        if( angle_tro(ang,pt0.angle[0],tro) )
+        {
+            
+            if(angle_tro(ang,pt1.angle[0],tro))
+                return 1;
+            else if(angle_tro(ang,pt1.angle[1],tro))
+                return 2;
+        }
     }
     else if( pt1.type==TTyle && pt0.type==LTyle )
     {
-        return angle_tro(ang,pt1.angle[0],tro)&&
-        (angle_tro(ang,pt0.angle[0],tro)||
-         angle_tro(ang,pt0.angle[1],tro));
+        if( angle_tro(ang,pt1.angle[0],tro) )
+        {
+            
+            if(angle_tro(ang,pt0.angle[0],tro))
+                return 1;
+            else if(angle_tro(ang,pt0.angle[1],tro))
+                return 2;
+        }
     }
-    //L和L不互相应征
-    else if( pt1.type==LTyle && pt0.type==LTyle &&
-            pt1.m != pt0.m )
+    //L和L不互相应征,和C对C
+    else if( (pt1.type==LTyle && pt0.type==LTyle &&
+            pt1.m != pt0.m) || (pt0.type==CTyle && pt1.type==CTyle) )
     {
-        return (angle_tro(ang,pt0.angle[0],tro)||angle_tro(ang,pt0.angle[1],tro))&&
-                (angle_tro(ang,pt1.angle[0],tro)||angle_tro(ang,pt1.angle[1],tro));
+        if( angle_tro(ang, pt0.angle[0], tro) && angle_tro(ang, pt1.angle[0], tro) )
+            return 1;
+        else if( angle_tro(ang, pt0.angle[0], tro) && angle_tro(ang, pt1.angle[1], tro) )
+            return 2;
+        else if( angle_tro(ang, pt0.angle[1], tro) && angle_tro(ang, pt1.angle[0], tro) )
+            return 3;
+        else if( angle_tro(ang, pt0.angle[1], tro) && angle_tro(ang, pt1.angle[1], tro) )
+            return 4;
     }
-    return false;
+    else if( pt0.type==TTyle && pt1.type==CTyle )
+    {
+        if( angle_tro(ang,pt0.angle[1],tro) )
+        {
+            
+            if(angle_tro(ang,pt1.angle[0],tro))
+                return 1;
+            else if(angle_tro(ang,pt1.angle[1],tro))
+                return 2;
+        }
+    }
+    else if( pt1.type==TTyle && pt0.type==CTyle )
+    {
+        if( angle_tro(ang,pt1.angle[1],tro) )
+        {
+            
+            if(angle_tro(ang,pt0.angle[0],tro))
+                return 1;
+            else if(angle_tro(ang,pt0.angle[1],tro))
+                return 2;
+        }
+    }
+    return 0;
 }
 /*
     vps表示多个共线组,每一个vps项都是一个共线点的列表.
@@ -2807,17 +2849,65 @@ bool RgnGrid::isInCrossPt(TLPt& pt)
     }
     return false;
 }
+//p0-p1组成的直线和p2-p3组成的直线的交点在p0-p1-p2-p3的极值范围内返回true,否则false
+static bool crossPtInRang(const TLPt& p0,const TLPt& p1,const TLPt& p2,const TLPt& p3)
+{
+    int pt1[2];
+    int pt2[2];
+    Vec4f L1,L2;
+    pt1[0] = p0.ox;
+    pt1[1] = p0.oy;
+    pt2[0] = p1.ox;
+    pt2[1] = p1.oy;
+    buildLine(pt1, pt2, L1);
+    pt1[0] = p2.ox;
+    pt1[1] = p2.oy;
+    pt2[0] = p3.ox;
+    pt2[1] = p3.oy;
+    buildLine(pt1,pt2,L2);
+    Point2f cpt = Cross(L1,L2);
+    Point2f minpt,maxpt;
+    minpt.x = min(p0.ox,min(p1.ox,min(p2.ox,p3.ox)));
+    minpt.y = min(p0.oy,min(p1.oy,min(p2.oy,p3.oy)));
+    maxpt.x = max(p0.ox,max(p1.ox,max(p2.ox,p3.ox)));
+    maxpt.y = max(p0.oy,max(p1.oy,max(p2.oy,p3.oy)));
+    if( cpt.x>minpt.x && cpt.x<maxpt.x &&
+       cpt.y>minpt.y && cpt.y<maxpt.y )
+        return true;
+    return false;
+}
+//如果ptl和某个分类匹配就放入其中,并且返回true.否则返回false
+bool RgnGrid::PtLineVP(vector<vector<PtLine > >&vps,PtLine& ptl,float tro)
+{
+    for(vector<vector<PtLine > >::iterator i=vps.begin();i!=vps.end();++i)
+    {
+        //和第一个比较就行了吧?
+        if( !i->empty() )
+        {
+            PtLine& pl = i->front();
+            if( angle_tro(pl.angle, ptl.angle, tro) &&
+                crossPtInRang(LLPts[ptl.idx[0]],LLPts[ptl.idx[1]],
+                              LLPts[pl.idx[0]],LLPts[pl.idx[1]]))
+            {
+                i->push_back(ptl);
+                return true;
+            }
+        }
+    }
+    return false;
+}
 /*
-    类似于SelectMatch,但是使用的数据和方法不同.
-    SelectMatch2采用发现十字型点和T型点的方法进行.考虑一组共线的T型点和十字型点.
-    T型点定位边界,十字型点定位分割线.从而可以推测出包围线和上面的等距点.
-    而SelectMatch仅仅使用T型点的信息.
-    考虑到SelectMatch已经做的工作.数据来源T型点从TBorders中引入,十字点从CrossPt中引入
-    同样输出一组边OuterBorder直线.
+ 类似于SelectMatch,但是使用的数据和方法不同.
+ SelectMatch2采用发现十字型点和T型点的方法进行.考虑一组共线的T型点和十字型点.
+ T型点定位边界,十字型点定位分割线.从而可以推测出包围线和上面的等距点.
+ 而SelectMatch仅仅使用T型点的信息.
+ 考虑到SelectMatch已经做的工作.数据来源T型点从TBorders中引入,十字点从CrossPt中引入
+ 同样输出一组边OuterBorder直线.
  */
 void RgnGrid::SelectMatch2(float tro)
 {
     //先将点都收集到LLPts中去
+    
     for(TLVector::iterator it=CrossPt.begin();it!=CrossPt.end();++it)
         LLPts.push_back(*it);
     for(int i=0;i<4;++i)
@@ -2830,17 +2920,72 @@ void RgnGrid::SelectMatch2(float tro)
             LLPts.push_back(Corner[i]);
     }
     //下面将分析出经纬线来,LL[0]是竖线,LL[1]是横线,它们都LLPts中的点的索引值
+    list<PtLine> ptv;
     for(TLVector::iterator it=LLPts.begin();it!=LLPts.end();++it)
     {
         for(TLVector::iterator j=it+1;j!=LLPts.end();++j)
         {
-            if( isLine(*it,*j,tro) )
+            int c = isLine(*it,*j,tro);
+            if( c )
             {
-                
+                PtLine ptl;
+                ptl.c = c;
+                ptl.idx[0] = it-LLPts.begin();
+                ptl.idx[1] = j-LLPts.begin();
+                ptl.angle = my_atan(j->oy-it->oy, j->ox-it->ox);
+                ptv.push_back(ptl);
             }
         }
     }
+    /*
+     现在将共线的点对都放入到ptv中了,下面将个这些点对进行分类
+     将向平行或者角度很接近的进行归类
+    */
+    vector<vector<PtLine > > vps;
+    while(!ptv.empty())
+    {
+        PtLine& ptl = ptv.front();
+        if( PtLineVP(vps,ptl,tro) )
+        { //成功放入分类
+            ptv.erase(ptv.begin());
+            continue;
+        }
+        else
+        { //没有找到合适的分类
+            bool b = false;
+            list<PtLine>::iterator next = ptv.begin();
+            next++;
+            for(list<PtLine>::iterator i=next;i!=ptv.end();++i)
+            {
+                if(angle_tro(ptl.angle,i->angle,tro)&&
+                   crossPtInRang(LLPts[ptl.idx[0]],LLPts[ptl.idx[1]],
+                                 LLPts[i->idx[0]],LLPts[i->idx[1]]))
+                {
+                    vector<PtLine> vp;
+                    vp.push_back(ptl);
+                    vp.push_back(*i);
+                    vps.push_back(vp);
+                    ptv.erase(ptv.begin());
+                    ptv.erase(i);
+                    b = true;
+                    break;
+                }
+            }
+            if( !b ) //都没发现
+            {
+                ptv.erase(ptv.begin());
+            }
+        }
+    }
+    /*
+        对vps中的直线进行在分类,主要考虑分成横向和纵向两个类
+     */
+    for(vector<vector<PtLine>>::iterator i=vps.begin();i!=vps.end();++i)
+    {
+        
+    }
 }
+
 void RgnGrid::addCornerV2i(vector<Vec2i>& tlp,int m)
 {
     if( Corner[m-1].type==LTyle )

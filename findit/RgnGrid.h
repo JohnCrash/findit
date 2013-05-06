@@ -322,6 +322,13 @@ protected:
                                   const TLVector& v3,const TLVector& v4);
     bool hasTPtOutAndRemove();
     void SelectMatch(float tro);
+    struct PtLine
+    {
+        int c; //相交模式
+        float angle;
+        int idx[2];
+    };
+    bool PtLineVP(vector<vector<PtLine > >&vps,PtLine& ptl,float tro);
     void SelectMatch2(float tro);
     void SelectEdge(list<TLPt>& edge,vector<TLVector>& vps,float tro,int bs);
     void addCornerV2i(vector<Vec2i>& tlp,int m);
