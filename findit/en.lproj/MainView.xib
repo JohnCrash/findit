@@ -148,15 +148,17 @@
 									<bool key="IBUIOpaque">NO</bool>
 									<string key="targetRuntimeIdentifier">IBCocoaTouchFramework</string>
 									<int key="IBSegmentControlStyle">2</int>
-									<int key="IBNumberOfSegments">4</int>
+									<int key="IBNumberOfSegments">5</int>
 									<int key="IBSelectedSegmentIndex">0</int>
 									<array key="IBSegmentTitles">
 										<string>C</string>
 										<string>M</string>
 										<string>E</string>
 										<string>B</string>
+										<string>+</string>
 									</array>
 									<array class="NSMutableArray" key="IBSegmentWidths">
+										<real value="0.0"/>
 										<real value="0.0"/>
 										<real value="0.0"/>
 										<real value="0.0"/>
@@ -167,8 +169,10 @@
 										<boolean value="YES"/>
 										<boolean value="YES"/>
 										<boolean value="YES"/>
+										<boolean value="YES"/>
 									</array>
 									<array class="NSMutableArray" key="IBSegmentContentOffsets">
+										<string>{0, 0}</string>
 										<string>{0, 0}</string>
 										<string>{0, 0}</string>
 										<string>{0, 0}</string>
@@ -176,6 +180,7 @@
 									</array>
 									<array class="NSMutableArray" key="IBSegmentImages">
 										<object class="NSNull" id="4"/>
+										<reference ref="4"/>
 										<reference ref="4"/>
 										<reference ref="4"/>
 										<reference ref="4"/>
@@ -909,7 +914,7 @@
 				<string key="90.IBPluginDependency">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 				<string key="94.IBPluginDependency">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 				<string key="96.IBPluginDependency">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
-				<integer value="3" key="96.IUISegmentedControlInspectorSelectedSegmentMetadataKey"/>
+				<integer value="4" key="96.IUISegmentedControlInspectorSelectedSegmentMetadataKey"/>
 				<string key="97.IBPluginDependency">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 				<string key="98.IBPluginDependency">com.apple.InterfaceBuilder.IBCocoaTouchPlugin</string>
 				<integer value="1" key="98.IUISegmentedControlInspectorSelectedSegmentMetadataKey"/>

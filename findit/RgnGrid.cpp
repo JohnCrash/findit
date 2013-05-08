@@ -486,6 +486,26 @@ void RgnGrid::drawTL(Mat& mt,int type)
           //  }
         }
     }
+    //将CrossR绘制出来
+    if( type&16 )
+    {
+        for(vector<CrossR>::iterator i=CrossRange.begin();i!=CrossRange.end();++i)
+        {
+            drawTLPt(mt,i->pt);
+            for(int j=0;j<4;j++ )
+            {
+                if(i->rang[j].type!=TNothing)
+                    drawTLPt(mt, i->rang[j]);
+            if(i->rang[j].type!=TNothing)
+            line(mt,Point(i->pt.ox,i->pt.oy),Point(i->rang[j].ox,i->rang[j].oy),Scalar(255,0,0),2,CV_AA);
+            }
+        //    Scalar color;
+        //    color = Scalar(255,0,0);
+        //    draw_v4f(mt,i->line[0],color);
+        //    color = Scalar(0,0,255);
+        //    draw_v4f(mt,i->line[1],color);
+        }
+    }
 }
 
 /*
@@ -557,10 +577,8 @@ void RgnGrid::clear()
         Corner[i].type = TNothing; //清除角点
         Intact[i] = 0;
     }
-    LLPts.clear();
-    LL[0].clear();
-    LL[1].clear();
     CrossPt.clear();
+    CrossRange.clear();
     destoryAllBlock();
 }
 /* 扩大块尺寸直到不符合条件为止
@@ -2113,7 +2131,7 @@ int RgnGrid::isLine(const TLPt& pt0,const TLPt& pt1,float tro) const
             if(angle_tro(ang,pt0.angle[0],tro))
                 return 1;
             else if(angle_tro(ang,pt0.angle[1],tro))
-                return 2;
+                return 3;
         }
     }
     //L和L不互相应征,和C对C
@@ -2148,7 +2166,7 @@ int RgnGrid::isLine(const TLPt& pt0,const TLPt& pt1,float tro) const
             if(angle_tro(ang,pt0.angle[0],tro))
                 return 1;
             else if(angle_tro(ang,pt0.angle[1],tro))
-                return 2;
+                return 4;
         }
     }
     return 0;
@@ -2876,25 +2894,97 @@ static bool crossPtInRang(const TLPt& p0,const TLPt& p1,const TLPt& p2,const TLP
         return true;
     return false;
 }
-//如果ptl和某个分类匹配就放入其中,并且返回true.否则返回false
-bool RgnGrid::PtLineVP(vector<vector<PtLine > >&vps,PtLine& ptl,float tro)
+static void fitLineTLPt(vector<TLPt>& vp,Vec4f& line)
 {
-    for(vector<vector<PtLine > >::iterator i=vps.begin();i!=vps.end();++i)
+    vector<Vec2i> v;
+    for(vector<TLPt>::iterator i=vp.begin();i!=vp.end();++i)
     {
-        //和第一个比较就行了吧?
-        if( !i->empty() )
+        Vec2i p;
+        p[0]=i->ox;
+        p[1]=i->oy;
+        v.push_back(p);
+    }
+    fitLine(v,line,CV_DIST_L1,0,0,0);
+}
+/*由pt,vp组成的十字组合
+ 该函数不做复杂的判读,仅仅将横向交点和纵向交点进行排序,
+ 然后发现最两段的T型点,并把这些放入CrossRange中去.
+ */
+void RgnGrid::addCrossR(TLPt& pt,vector<TLPt>& vp0,vector<TLPt>& vp1)
+{
+    CrossR cr;
+    cr.pt = pt;
+    /*
+    cr.line[0][0] = pt.line[0];
+    cr.line[0][1] = pt.line[1];
+    cr.line[0][2] = pt.ox;
+    cr.line[0][3] = pt.oy;
+    cr.line[1][0] = pt.line[2];
+    cr.line[1][1] = pt.line[3];
+    cr.line[1][2] = pt.ox;
+    cr.line[1][3] = pt.oy; */
+    fitLineTLPt(vp0,cr.line[0]);
+    fitLineTLPt(vp1,cr.line[1]);
+    //判断十字型点的走向
+    if( abs(pt.line[1])>abs(pt.line[0]) ) //第1条直线是垂直向的
+    {
+        sort(vp0.begin(),vp0.end(),sort_y);
+        sort(vp1.begin(),vp1.end(),sort_x);
+    }
+    else
+    {
+        sort(vp0.begin(),vp0.end(),sort_x);
+        sort(vp1.begin(),vp1.end(),sort_y);
+    }
+    //简单的从两头找出T型边界
+    for(vector<TLPt>::iterator i=vp0.begin();i!=vp0.end();++i)
+    {
+        float rate = (float)(i-vp0.begin())/(float)vp0.size();
+        if( rate > 0.1 )break;
+        //允许有点出入,但是不能偏离端点太远
+        if( i->type==TTyle && i->m==1 )
         {
-            PtLine& pl = i->front();
-            if( angle_tro(pl.angle, ptl.angle, tro) &&
-                crossPtInRang(LLPts[ptl.idx[0]],LLPts[ptl.idx[1]],
-                              LLPts[pl.idx[0]],LLPts[pl.idx[1]]))
-            {
-                i->push_back(ptl);
-                return true;
-            }
+            cr.rang[0] = *i;
+            break;
         }
     }
-    return false;
+    //反向查找
+    for(vector<TLPt>::reverse_iterator i=vp0.rbegin();i!=vp0.rend();++i)
+    {
+        float rate = (float)(i-vp0.rbegin())/(float)vp0.size();
+        if( rate > 0.1 )break;
+        //允许有点出入,但是不能偏离端点太远
+        if( i->type==TTyle && i->m==3 )
+        {
+            cr.rang[2] = *i;
+            break;
+        }
+    }
+    //简单的从两头找出T型边界
+    for(vector<TLPt>::iterator i=vp1.begin();i!=vp1.end();++i)
+    {
+        float rate = (float)(i-vp1.begin())/(float)vp1.size();
+        if( rate > 0.1 )break;
+        //允许有点出入,但是不能偏离端点太远
+        if( i->type==TTyle && i->m==4 )
+        {
+            cr.rang[3] = *i;
+            break;
+        }
+    }
+    //反向查找
+    for(vector<TLPt>::reverse_iterator i=vp1.rbegin();i!=vp1.rend();++i)
+    {
+        float rate = (float)(i-vp1.rbegin())/(float)vp1.size();
+        if( rate > 0.1 )break;
+        //允许有点出入,但是不能偏离端点太远
+        if( i->type==TTyle && i->m==2 )
+        {
+            cr.rang[1] = *i;
+            break;
+        }
+    }
+    CrossRange.push_back(cr);
 }
 /*
  类似于SelectMatch,但是使用的数据和方法不同.
@@ -2907,7 +2997,7 @@ bool RgnGrid::PtLineVP(vector<vector<PtLine > >&vps,PtLine& ptl,float tro)
 void RgnGrid::SelectMatch2(float tro)
 {
     //先将点都收集到LLPts中去
-    
+    vector<TLPt> LLPts;
     for(TLVector::iterator it=CrossPt.begin();it!=CrossPt.end();++it)
         LLPts.push_back(*it);
     for(int i=0;i<4;++i)
@@ -2915,75 +3005,32 @@ void RgnGrid::SelectMatch2(float tro)
         for(vector<TLVector>::iterator it=TBorders[i].begin();it!=TBorders[i].end();++it)
             for(TLVector::iterator j=it->begin();j!=it->end();++j)
                 LLPts.push_back(*j);
-        //将4个角补上
-        if(Corner[i].type!=TNothing)
-            LLPts.push_back(Corner[i]);
     }
-    //下面将分析出经纬线来,LL[0]是竖线,LL[1]是横线,它们都LLPts中的点的索引值
-    list<PtLine> ptv;
+    //将和十字型点共线的集合放入cpt中
     for(TLVector::iterator it=LLPts.begin();it!=LLPts.end();++it)
     {
-        for(TLVector::iterator j=it+1;j!=LLPts.end();++j)
+        vector<int> vp0,vp1;
+        if( it->type==CTyle )
         {
-            int c = isLine(*it,*j,tro);
-            if( c )
+            for(TLVector::iterator j=LLPts.begin();j!=LLPts.end();++j)
             {
-                PtLine ptl;
-                ptl.c = c;
-                ptl.idx[0] = it-LLPts.begin();
-                ptl.idx[1] = j-LLPts.begin();
-                ptl.angle = my_atan(j->oy-it->oy, j->ox-it->ox);
-                ptv.push_back(ptl);
-            }
-        }
-    }
-    /*
-     现在将共线的点对都放入到ptv中了,下面将个这些点对进行分类
-     将向平行或者角度很接近的进行归类
-    */
-    vector<vector<PtLine > > vps;
-    while(!ptv.empty())
-    {
-        PtLine& ptl = ptv.front();
-        if( PtLineVP(vps,ptl,tro) )
-        { //成功放入分类
-            ptv.erase(ptv.begin());
-            continue;
-        }
-        else
-        { //没有找到合适的分类
-            bool b = false;
-            list<PtLine>::iterator next = ptv.begin();
-            next++;
-            for(list<PtLine>::iterator i=next;i!=ptv.end();++i)
-            {
-                if(angle_tro(ptl.angle,i->angle,tro)&&
-                   crossPtInRang(LLPts[ptl.idx[0]],LLPts[ptl.idx[1]],
-                                 LLPts[i->idx[0]],LLPts[i->idx[1]]))
+                int c = isLine(*it,*j,tro);
+                if( c )
                 {
-                    vector<PtLine> vp;
-                    vp.push_back(ptl);
-                    vp.push_back(*i);
-                    vps.push_back(vp);
-                    ptv.erase(ptv.begin());
-                    ptv.erase(i);
-                    b = true;
-                    break;
+                    if( c==1||c==2 )
+                        vp0.push_back((int)(j-LLPts.begin()));
+                    else
+                        vp1.push_back((int)(j-LLPts.begin()));
                 }
             }
-            if( !b ) //都没发现
-            {
-                ptv.erase(ptv.begin());
-            }
+        }
+        if( vp0.size() > 1 && vp1.size() > 1 )
+        {
+           // addCrossR(*it,vp0,vp1);
         }
     }
     /*
-        对vps中的直线进行在分类,主要考虑分成横向和纵向两个类
      */
-    for(vector<vector<PtLine>>::iterator i=vps.begin();i!=vps.end();++i)
-    {
-        
-    }
 }
 
 void RgnGrid::addCornerV2i(vector<Vec2i>& tlp,int m)

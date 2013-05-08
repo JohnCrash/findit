@@ -146,6 +146,15 @@ struct TLPt
     {}
 };
 
+//一个识别十字,对应一组由十字型点和T型点组成的十字
+struct CrossR
+{
+    Vec4f line[2]; //十字的两条直线,0线是竖线,1线是横线
+    TLPt pt; //交点对应的TLPt点
+    TLPt rang[4]; //分别对应0=上横线的T型点,1=右竖线T型点
+    //2=下横线T型点,如果没有type=TNothing
+};
+
 typedef vector<TLPt> TLVector;
 typedef boost::function<void (float)> ProgressFunc;
 
@@ -322,13 +331,7 @@ protected:
                                   const TLVector& v3,const TLVector& v4);
     bool hasTPtOutAndRemove();
     void SelectMatch(float tro);
-    struct PtLine
-    {
-        int c; //相交模式
-        float angle;
-        int idx[2];
-    };
-    bool PtLineVP(vector<vector<PtLine > >&vps,PtLine& ptl,float tro);
+    void addCrossR(TLPt& pt,vector<TLPt>& vp0,vector<TLPt>& vp1);
     void SelectMatch2(float tro);
     void SelectEdge(list<TLPt>& edge,vector<TLVector>& vps,float tro,int bs);
     void addCornerV2i(vector<Vec2i>& tlp,int m);
@@ -338,8 +341,7 @@ protected:
     vector<TLVector> TBorders[4]; //全部T型边分组.
     TLVector TBorder[4]; //T型边,匹配好的T形边变
     TLVector CrossPt; //C型点
-    vector<TLPt> LLPts; //参见Selectmatch2
-    vector<vector<int> > LL[2];
+    vector<CrossR> CrossRange;
     int Intact[4];
     bool Guess();
     bool GuessIncomplete(int type);
