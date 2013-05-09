@@ -137,13 +137,25 @@ struct TLPt
     TLType type; //块类型
     int rank;
     int fail_rank;
+    int idx; //自己在列表中的位置
+    int rang[4];//周围和它相邻的共线TLPt点,用在SelectMatch2算法中
     
     TLPt():x(0),y(0),block_size(0),
-    ox(0),oy(0),m(0),type(TNothing),rank(0),fail_rank(0)
-    {}
+    ox(0),oy(0),m(0),type(TNothing),rank(0),fail_rank(0),idx(-1)
+    {
+        rang[0] = -1;
+        rang[1] = -1;
+        rang[2] = -1;
+        rang[3] = -1;
+    }
     TLPt(TLType t,int _x,int _y,int bs):
-    type(t),x(_x),y(_y),block_size(bs),rank(0),fail_rank(0)
-    {}
+    type(t),x(_x),y(_y),block_size(bs),rank(0),fail_rank(0),idx(-1)
+    {
+        rang[0] = -1;
+        rang[1] = -1;
+        rang[2] = -1;
+        rang[3] = -1;
+    }
 };
 
 //一个识别十字,对应一组由十字型点和T型点组成的十字
@@ -332,6 +344,7 @@ protected:
     bool hasTPtOutAndRemove();
     void SelectMatch(float tro);
     void addCrossR(TLPt& pt,vector<TLPt>& vp0,vector<TLPt>& vp1);
+    void CrossRang(vector<TLPt>& pts,TLPt& pt,vector<int>& vp0,vector<int> &vp1);
     void SelectMatch2(float tro);
     void SelectEdge(list<TLPt>& edge,vector<TLVector>& vps,float tro,int bs);
     void addCornerV2i(vector<Vec2i>& tlp,int m);
@@ -341,7 +354,7 @@ protected:
     vector<TLVector> TBorders[4]; //全部T型边分组.
     TLVector TBorder[4]; //T型边,匹配好的T形边变
     TLVector CrossPt; //C型点
-    vector<CrossR> CrossRange;
+    vector<TLPt> LLPts;
     int Intact[4];
     bool Guess();
     bool GuessIncomplete(int type);

@@ -351,7 +351,17 @@ void RgnGrid::drawTLPt(Mat& mt,const TLPt& pt )
         circle(mt,Point(pt.ox,pt.oy),5,color,3,8,0);
     }
 }
-
+static int dindex(int i)
+{
+    switch(i)
+    {
+        case 0:return 2;
+        case 1:return 3;
+        case 2:return 0;
+        case 3:return 1;
+        default: return -1;
+    }
+}
 static void draw_v4f(Mat& mt,Vec4f v4f,Scalar color)
 {
     int x0,y0,x1,y1;
@@ -489,21 +499,38 @@ void RgnGrid::drawTL(Mat& mt,int type)
     //将CrossR绘制出来
     if( type&16 )
     {
-        for(vector<CrossR>::iterator i=CrossRange.begin();i!=CrossRange.end();++i)
+        for(vector<TLPt>::iterator i=LLPts.begin();i!=LLPts.end();++i)
         {
-            drawTLPt(mt,i->pt);
-            for(int j=0;j<4;j++ )
+            if(i->type==CTyle)
             {
-                if(i->rang[j].type!=TNothing)
-                    drawTLPt(mt, i->rang[j]);
-            if(i->rang[j].type!=TNothing)
-            line(mt,Point(i->pt.ox,i->pt.oy),Point(i->rang[j].ox,i->rang[j].oy),Scalar(255,0,0),2,CV_AA);
+                Point p,p2;
+                p.x = i->ox;
+                p.y = i->oy;
+               // drawTLPt(mt, *i);
+                for(int j=0;j<4;++j)
+                {
+                    if(i->rang[j]!=-1)
+                    {
+                        Scalar color;
+                   //     int index = LLPts[i->rang[j]].idx;
+                   //     int ot = LLPts[index].rang[dindex(j)];
+                   //     if( ot!=i->idx )
+                        {
+                            p2.x = LLPts[i->rang[j]].ox;
+                            p2.y = LLPts[i->rang[j]].oy;
+                            if(j==0)
+                                color = Scalar(0,0,255);
+                            else if(j==1)
+                                color = Scalar(255,0,0);
+                            else if(j==2)
+                                color = Scalar(0,255,0);
+                            else
+                                color = Scalar(255,255,0);
+                            line(mt,p,p2,color,2,CV_AA);
+                        }
+                    }
+                }
             }
-        //    Scalar color;
-        //    color = Scalar(255,0,0);
-        //    draw_v4f(mt,i->line[0],color);
-        //    color = Scalar(0,0,255);
-        //    draw_v4f(mt,i->line[1],color);
         }
     }
 }
@@ -578,7 +605,7 @@ void RgnGrid::clear()
         Intact[i] = 0;
     }
     CrossPt.clear();
-    CrossRange.clear();
+    LLPts.clear();
     destoryAllBlock();
 }
 /* 扩大块尺寸直到不符合条件为止
@@ -2642,7 +2669,7 @@ void RgnGrid::MatchEdge(list<TLPt> edge[4])
         for(int i=0;i<4;++i)
         {
             edge[i].clear();
-            if( !TBorders[i].at(0).empty() )
+            if( !TBorders[i].empty()&&!TBorders[i].at(0).empty() )
             {
                 edge[i].resize(TBorders[i].at(0).size());
                 copy(TBorders[i].at(0).begin(),TBorders[i].at(0).end(),edge[i].begin());
@@ -2906,85 +2933,43 @@ static void fitLineTLPt(vector<TLPt>& vp,Vec4f& line)
     }
     fitLine(v,line,CV_DIST_L1,0,0,0);
 }
-/*由pt,vp组成的十字组合
- 该函数不做复杂的判读,仅仅将横向交点和纵向交点进行排序,
- 然后发现最两段的T型点,并把这些放入CrossRange中去.
- */
-void RgnGrid::addCrossR(TLPt& pt,vector<TLPt>& vp0,vector<TLPt>& vp1)
+static bool sort_yy(vector<TLPt>& pts,int i,int j)
 {
-    CrossR cr;
-    cr.pt = pt;
-    /*
-    cr.line[0][0] = pt.line[0];
-    cr.line[0][1] = pt.line[1];
-    cr.line[0][2] = pt.ox;
-    cr.line[0][3] = pt.oy;
-    cr.line[1][0] = pt.line[2];
-    cr.line[1][1] = pt.line[3];
-    cr.line[1][2] = pt.ox;
-    cr.line[1][3] = pt.oy; */
-    fitLineTLPt(vp0,cr.line[0]);
-    fitLineTLPt(vp1,cr.line[1]);
+    return pts[i].oy < pts[j].oy;
+}
+static bool sort_xx(vector<TLPt>& pts,int i,int j)
+{
+    return pts[i].ox < pts[j].ox;
+}
+static void get_rang_idx(vector<int>& vp,int idx,int &a,int &b)
+{
+    vector<int>::iterator i=find(vp.begin(),vp.end(),idx);
+
+    if( i!=vp.end() )
+    {
+        if( i!=vp.begin() )
+            a = *(i-1);
+        if( (i+1)!=vp.end() )
+            b = *(i+1);
+    }
+}
+void RgnGrid::CrossRang(vector<TLPt>& pts,TLPt& pt,vector<int>& vp0,vector<int> &vp1)
+{
     //判断十字型点的走向
     if( abs(pt.line[1])>abs(pt.line[0]) ) //第1条直线是垂直向的
     {
-        sort(vp0.begin(),vp0.end(),sort_y);
-        sort(vp1.begin(),vp1.end(),sort_x);
+        sort(vp0.begin(),vp0.end(),boost::bind(sort_yy,pts,_1,_2));
+        sort(vp1.begin(),vp1.end(),boost::bind(sort_xx,pts,_1,_2));
+        get_rang_idx(vp0,pt.idx,pt.rang[0],pt.rang[2]);
+        get_rang_idx(vp1,pt.idx,pt.rang[3],pt.rang[1]);
     }
     else
     {
-        sort(vp0.begin(),vp0.end(),sort_x);
-        sort(vp1.begin(),vp1.end(),sort_y);
+        sort(vp0.begin(),vp0.end(),boost::bind(sort_xx,pts,_1,_2));
+        sort(vp1.begin(),vp1.end(),boost::bind(sort_yy,pts,_1,_2));
+        get_rang_idx(vp1,pt.idx,pt.rang[0],pt.rang[2]);
+        get_rang_idx(vp0,pt.idx,pt.rang[3],pt.rang[1]);
     }
-    //简单的从两头找出T型边界
-    for(vector<TLPt>::iterator i=vp0.begin();i!=vp0.end();++i)
-    {
-        float rate = (float)(i-vp0.begin())/(float)vp0.size();
-        if( rate > 0.1 )break;
-        //允许有点出入,但是不能偏离端点太远
-        if( i->type==TTyle && i->m==1 )
-        {
-            cr.rang[0] = *i;
-            break;
-        }
-    }
-    //反向查找
-    for(vector<TLPt>::reverse_iterator i=vp0.rbegin();i!=vp0.rend();++i)
-    {
-        float rate = (float)(i-vp0.rbegin())/(float)vp0.size();
-        if( rate > 0.1 )break;
-        //允许有点出入,但是不能偏离端点太远
-        if( i->type==TTyle && i->m==3 )
-        {
-            cr.rang[2] = *i;
-            break;
-        }
-    }
-    //简单的从两头找出T型边界
-    for(vector<TLPt>::iterator i=vp1.begin();i!=vp1.end();++i)
-    {
-        float rate = (float)(i-vp1.begin())/(float)vp1.size();
-        if( rate > 0.1 )break;
-        //允许有点出入,但是不能偏离端点太远
-        if( i->type==TTyle && i->m==4 )
-        {
-            cr.rang[3] = *i;
-            break;
-        }
-    }
-    //反向查找
-    for(vector<TLPt>::reverse_iterator i=vp1.rbegin();i!=vp1.rend();++i)
-    {
-        float rate = (float)(i-vp1.rbegin())/(float)vp1.size();
-        if( rate > 0.1 )break;
-        //允许有点出入,但是不能偏离端点太远
-        if( i->type==TTyle && i->m==2 )
-        {
-            cr.rang[1] = *i;
-            break;
-        }
-    }
-    CrossRange.push_back(cr);
 }
 /*
  类似于SelectMatch,但是使用的数据和方法不同.
@@ -2997,7 +2982,6 @@ void RgnGrid::addCrossR(TLPt& pt,vector<TLPt>& vp0,vector<TLPt>& vp1)
 void RgnGrid::SelectMatch2(float tro)
 {
     //先将点都收集到LLPts中去
-    vector<TLPt> LLPts;
     for(TLVector::iterator it=CrossPt.begin();it!=CrossPt.end();++it)
         LLPts.push_back(*it);
     for(int i=0;i<4;++i)
@@ -3010,29 +2994,77 @@ void RgnGrid::SelectMatch2(float tro)
     for(TLVector::iterator it=LLPts.begin();it!=LLPts.end();++it)
     {
         vector<int> vp0,vp1;
+        it->idx = (int)(it-LLPts.begin());
         if( it->type==CTyle )
         {
             for(TLVector::iterator j=LLPts.begin();j!=LLPts.end();++j)
             {
-                int c = isLine(*it,*j,tro);
-                if( c )
+                int index = (int)(j-LLPts.begin());
+                if( index != it->idx )
                 {
-                    if( c==1||c==2 )
-                        vp0.push_back((int)(j-LLPts.begin()));
-                    else
-                        vp1.push_back((int)(j-LLPts.begin()));
+                    int c = isLine(*it,*j,tro);
+                    if( c )
+                    {
+                        if( c==1||c==2 )
+                            vp0.push_back(index);
+                        else
+                            vp1.push_back(index);
+                    }
                 }
             }
         }
         if( vp0.size() > 1 && vp1.size() > 1 )
         {
            // addCrossR(*it,vp0,vp1);
+            //加入相邻点
+            vp0.push_back(it->idx);
+            vp1.push_back(it->idx);
+            CrossRang(LLPts,*it,vp0,vp1);
         }
     }
     /*
+        如果TLPt点之间互相指向则保留,如果有一边是T型点做进一步测试
      */
+    for(vector<TLPt>::iterator i=LLPts.begin();i!=LLPts.end();++i)
+    {
+        if(i->type==CTyle)
+        {
+            for(int j=0;j<4;++j)
+            {
+                if(i->rang[j]!=-1)
+                {
+                    int index = LLPts[i->rang[j]].idx;
+                    int ot = LLPts[index].rang[dindex(j)];
+                    //如果对方是一个T型点需要更多的测试
+                    if( LLPts[index].type == TTyle )
+                    {
+                        Point p0,p1,p2;
+                        int k = i->rang[dindex(j)];
+                        if(k!=-1)
+                        {
+                            p0.x = LLPts[k].ox;
+                            p0.y = LLPts[k].oy;
+                            p1.x = i->ox;
+                            p1.y = i->oy;
+                            p2.x = LLPts[i->rang[j]].ox;
+                            p2.y = LLPts[i->rang[j]].oy;
+                            float a0 = my_atan(p1.y-p0.y, p1.x-p0.x);
+                            float a1 = my_atan(p2.y-p1.y, p2.x-p1.x);
+                            if( angle_tro(a0, a1, 5*CV_PI/180) )
+                                continue;
+                        }
+                        i->rang[j] = -1;
+                    }
+                    //自己指向另一个TLPt点,而该点的对应方向不指向我
+                    else if( ot!=i->idx )
+                    {
+                        i->rang[j] = -1;
+                    }
+                }
+            }
+        }
+    }
 }
-
 void RgnGrid::addCornerV2i(vector<Vec2i>& tlp,int m)
 {
     if( Corner[m-1].type==LTyle )
