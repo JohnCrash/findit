@@ -118,10 +118,10 @@
 		F5945D9C17001E7B004DBB3D /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				F500F54617042FCB009B70D0 /* Foundation.framework */,
 				F5A92849171D5F4D00894461 /* boost.framework */,
 				F5BE24B3170C867A00DC43F0 /* opencv2.framework */,
 				F500F54817042FD8009B70D0 /* CoreGraphics.framework */,
-				F500F54617042FCB009B70D0 /* Foundation.framework */,
 				F500F54417042FC2009B70D0 /* UIKit.framework */,
 				F5945DBE17001E7B004DBB3D /* SenTestingKit.framework */,
 			);

@@ -499,6 +499,7 @@ void RgnGrid::drawTL(Mat& mt,int type)
     //将CrossR绘制出来
     if( type&16 )
     {
+        /*
         for(vector<TLPt>::iterator i=LLPts.begin();i!=LLPts.end();++i)
         {
             if(i->type==CTyle)
@@ -512,9 +513,6 @@ void RgnGrid::drawTL(Mat& mt,int type)
                     if(i->rang[j]!=-1)
                     {
                         Scalar color;
-                   //     int index = LLPts[i->rang[j]].idx;
-                   //     int ot = LLPts[index].rang[dindex(j)];
-                   //     if( ot!=i->idx )
                         {
                             p2.x = LLPts[i->rang[j]].ox;
                             p2.y = LLPts[i->rang[j]].oy;
@@ -528,6 +526,35 @@ void RgnGrid::drawTL(Mat& mt,int type)
                                 color = Scalar(255,255,0);
                             line(mt,p,p2,color,2,CV_AA);
                         }
+                    }
+                }
+            }
+        }
+         */
+        for(int i=0;i<2;++i)
+        {
+            for(int j=0;j<LL[i].size();++j)
+            {
+                Point o;
+                for(int k=0;k<LL[i].at(j).size();++k)
+                {
+                    TLPt& pt = LLPts.at(LL[i].at(j).at(k));
+                    drawTLPt(mt, pt);
+                    if( k == 0 )
+                    {
+                        o.x = pt.ox;
+                        o.y = pt.oy;
+                    }
+                    else
+                    {
+                        Scalar color;
+                        if(i==0)
+                            color = Scalar(255,0,0);
+                        else
+                            color = Scalar(0,0,255);
+                        line(mt,o,Point(pt.ox,pt.oy),color,2,CV_AA);
+                        o.x = pt.ox;
+                        o.y = pt.oy;
                     }
                 }
             }
@@ -606,6 +633,8 @@ void RgnGrid::clear()
     }
     CrossPt.clear();
     LLPts.clear();
+    LL[0].clear();
+    LL[1].clear();
     destoryAllBlock();
 }
 /* 扩大块尺寸直到不符合条件为止
@@ -3076,7 +3105,7 @@ void RgnGrid::SelectMatch2(float tro)
     /*
      */
     vector<TLPt> pts;
-    vector<vector<int> > LL[2];
+    
     //将LLPts完整的复制到pts
     pts.resize(LLPts.size());
     copy(LLPts.begin(),LLPts.end(),pts.begin());
@@ -3091,12 +3120,6 @@ void RgnGrid::SelectMatch2(float tro)
         search_pt_line(pts,i->idx,false,vp);
         if( vp.size()>1 )
             LL[1].push_back(vp);
-    }
-    for(int i=0;i<2;i++)
-    {
-        for(int j=0;j<LL[i].size();++j)
-        {
-        }
     }
 }
 /*

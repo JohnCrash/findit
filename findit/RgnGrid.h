@@ -355,6 +355,7 @@ protected:
     TLVector TBorder[4]; //T型边,匹配好的T形边变
     TLVector CrossPt; //C型点
     vector<TLPt> LLPts;
+    vector<vector<int> > LL[2];
     int Intact[4];
     bool Guess();
     bool GuessIncomplete(int type);
