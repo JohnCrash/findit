@@ -137,8 +137,8 @@ struct TLPt
     TLType type; //块类型
     int rank;
     int fail_rank;
-    int idx; //自己在列表中的位置
-    int rang[4];//周围和它相邻的共线TLPt点,用在SelectMatch2算法中
+    int idx; //自己在列表LLPts中的索引
+    int rang[4];//周围和它相邻的共线TLPt点在LLPts中的索引,用在SelectMatch2算法中
     
     TLPt():x(0),y(0),block_size(0),
     ox(0),oy(0),m(0),type(TNothing),rank(0),fail_rank(0),idx(-1)

@@ -2979,6 +2979,7 @@ void RgnGrid::CrossRang(vector<TLPt>& pts,TLPt& pt,vector<int>& vp0,vector<int> 
  考虑到SelectMatch已经做的工作.数据来源T型点从TBorders中引入,十字点从CrossPt中引入
  同样输出一组边OuterBorder直线.
  */
+static void search_pt_line(vector<TLPt>& pts,int start,bool b,vector<int>& vp);
 void RgnGrid::SelectMatch2(float tro)
 {
     //先将点都收集到LLPts中去
@@ -2990,7 +2991,9 @@ void RgnGrid::SelectMatch2(float tro)
             for(TLVector::iterator j=it->begin();j!=it->end();++j)
                 LLPts.push_back(*j);
     }
-    //将和十字型点共线的集合放入cpt中
+    /*
+        对LLPts中的rang[4]进行设置.rang[4]分别被设置为上右下左4个方向的相邻共线TLPts索引
+     */
     for(TLVector::iterator it=LLPts.begin();it!=LLPts.end();++it)
     {
         vector<int> vp0,vp1;
@@ -3023,7 +3026,9 @@ void RgnGrid::SelectMatch2(float tro)
         }
     }
     /*
-        如果TLPt点之间互相指向则保留,如果有一边是T型点做进一步测试
+        如果TLPt点之间互相指向则保留,就是我在一个方向上指向你,而你在相反方向上指向我.
+        互相指向
+        如果有一边是T型点做进一步测试
      */
     for(vector<TLPt>::iterator i=LLPts.begin();i!=LLPts.end();++i)
     {
@@ -3051,7 +3056,11 @@ void RgnGrid::SelectMatch2(float tro)
                             float a0 = my_atan(p1.y-p0.y, p1.x-p0.x);
                             float a1 = my_atan(p2.y-p1.y, p2.x-p1.x);
                             if( angle_tro(a0, a1, 5*CV_PI/180) )
+                            {
+                                //通过进一步验证,将它们互相连接.下一步的算法需要
+                                LLPts[index].rang[dindex(j)] = i->idx;
                                 continue;
+                            }
                         }
                         i->rang[j] = -1;
                     }
@@ -3063,6 +3072,67 @@ void RgnGrid::SelectMatch2(float tro)
                 }
             }
         }
+    }
+    /*
+     */
+    vector<TLPt> pts;
+    vector<vector<int> > LL[2];
+    //将LLPts完整的复制到pts
+    pts.resize(LLPts.size());
+    copy(LLPts.begin(),LLPts.end(),pts.begin());
+    //搜索的方向的索引设置为-1
+    for(vector<TLPt>::iterator i=pts.begin();i!=pts.end();++i)
+    {
+        vector<int> vp;
+        search_pt_line(pts,i->idx,true,vp);
+        if( vp.size()>1 )
+            LL[0].push_back(vp);
+        vp.clear();
+        search_pt_line(pts,i->idx,false,vp);
+        if( vp.size()>1 )
+            LL[1].push_back(vp);
+    }
+    for(int i=0;i<2;i++)
+    {
+        for(int j=0;j<LL[i].size();++j)
+        {
+        }
+    }
+}
+/*
+    从点start开始,搜索.将搜索到的点的索引放入vp中
+    b横向还是纵向
+ */
+static void search_pt_line(vector<TLPt>& pts,int start,bool b,vector<int>& vp)
+{
+    TLPt& pt = pts[start];
+    int front,back;
+    if( b )
+    {
+        front = 1;
+        back = 3;
+    }
+    else
+    {
+        front = 2;
+        back = 0;
+    }
+    //向后搜索
+    int last = pt.idx;
+    int i = pt.rang[back];
+    while(i!=-1)
+    {
+        last = i;
+        i = pts[i].rang[back];
+    }
+    i = last;
+    while(i!=-1)
+    {
+        vp.push_back(i);
+        pts[i].rang[back] = -1;
+        int tmp = pts[i].rang[front];
+        pts[i].rang[front] = -1;
+        i = tmp;
     }
 }
 void RgnGrid::addCornerV2i(vector<Vec2i>& tlp,int m)
