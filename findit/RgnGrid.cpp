@@ -9,6 +9,7 @@
 #include "Denosie.h"
 #include <fstream>
 
+float lineDistance(Vec4f& l,int x,int y);
 //测试性能用,一个作用域计时器.打印析构时间减去构造事件
 class scope_timer
 {
@@ -47,6 +48,21 @@ void save(vector<Lines>& lines)
         f << "id=\"path" << id++ << "\"\n";
         f << "inkscape:connector-curvature=\"0\" />\n";
     }
+}
+/*
+ 已知直线方程line和x求y,line是参数方程
+ x = line[0]*t+line[2];
+ y = line[1]*t+line[3];
+ */
+static float get_y( Vec4f line,float x )
+{
+    float t = (x-line[2])/line[0];
+    return line[1]*t+line[3];
+}
+static float get_x( Vec4f line,float y )
+{
+    float t = (y-line[3])/line[1];
+    return line[0]*t+line[2];
 }
 //使用两点构造直线L
 static void buildLine(int p1[2],int p2[2],Vec4f& L)
@@ -531,6 +547,7 @@ void RgnGrid::drawTL(Mat& mt,int type)
             }
         }
          */
+        /*
         for(int i=0;i<2;++i)
         {
             for(int j=0;j<LL[i].size();++j)
@@ -539,7 +556,7 @@ void RgnGrid::drawTL(Mat& mt,int type)
                 for(int k=0;k<LL[i].at(j).size();++k)
                 {
                     TLPt& pt = LLPts.at(LL[i].at(j).at(k));
-                    drawTLPt(mt, pt);
+                    //drawTLPt(mt, pt);
                     if( k == 0 )
                     {
                         o.x = pt.ox;
@@ -549,15 +566,26 @@ void RgnGrid::drawTL(Mat& mt,int type)
                     {
                         Scalar color;
                         if(i==0)
-                            color = Scalar(255,0,0);
-                        else
                             color = Scalar(0,0,255);
+                        else
+                            color = Scalar(255,0,0);
                         line(mt,o,Point(pt.ox,pt.oy),color,2,CV_AA);
                         o.x = pt.ox;
                         o.y = pt.oy;
                     }
                 }
             }
+        }*/
+        
+        for(int k=0;k<2;++k)
+        {
+            Scalar color;
+            if(k==0)
+                color = Scalar(255,0,0);
+            else
+                color = Scalar(0,0,255);
+            for(list<Vec4f>::iterator i=Tlines[k].begin();i!=Tlines[k].end();++i)
+                draw_v4f(mt,*i, color);
         }
     }
 }
@@ -635,6 +663,8 @@ void RgnGrid::clear()
     LLPts.clear();
     LL[0].clear();
     LL[1].clear();
+    Tlines[0].clear();
+    Tlines[1].clear();
     destoryAllBlock();
 }
 /* 扩大块尺寸直到不符合条件为止
@@ -2088,7 +2118,7 @@ int RgnGrid::getLinePt(int p1[2],int p2[2],int dst[])
     return (int)(dp - dst)/2;
 }
 //计算点到直线的垂直距离
-float RgnGrid::lineDistance(Vec4f l,int x,int y)
+float lineDistance(Vec4f& l,int x,int y)
 {
     Vec4f l2;
     l2[0] = l[1];
@@ -3009,6 +3039,7 @@ void RgnGrid::CrossRang(vector<TLPt>& pts,TLPt& pt,vector<int>& vp0,vector<int> 
  同样输出一组边OuterBorder直线.
  */
 static void search_pt_line(vector<TLPt>& pts,int start,bool b,vector<int>& vp);
+static bool Collinear(const TLPt& p0,const TLPt& p1,const TLPt& p2,const TLPt& p3,float tro);
 void RgnGrid::SelectMatch2(float tro)
 {
     //先将点都收集到LLPts中去
@@ -3103,9 +3134,10 @@ void RgnGrid::SelectMatch2(float tro)
         }
     }
     /*
+        将连接点,提取出横向和纵向的线组.LL[2]
+        LL[0]横向,LL[1]纵向.
      */
     vector<TLPt> pts;
-    
     //将LLPts完整的复制到pts
     pts.resize(LLPts.size());
     copy(LLPts.begin(),LLPts.end(),pts.begin());
@@ -3121,6 +3153,105 @@ void RgnGrid::SelectMatch2(float tro)
         if( vp.size()>1 )
             LL[1].push_back(vp);
     }
+    /*
+        两两线段比较,看看是不是共线.如果共线则合并
+        SpeedFix:这里Collinear使用fitLine,和没点距离比较.同时复杂度也很高
+     */
+    for(int k=0;k<2;++k)
+    {
+        for(vector<vector<int > >::iterator i=LL[k].begin();i!=LL[k].end();++i)
+        {
+            vector<int> v;
+            for(vector<vector<int > >::iterator j=i+1;j!=LL[k].end();++j)
+            {
+                if( i->size()>1 && j->size()>1 )
+                    if( Collinear( *i,*j) )
+                    {//可能是一条直线,也可能有一条线有问题
+                     //这里需要进一步判断是不是不能很好的共线.
+                        int s = (int)i->size();
+                        i->resize(i->size()+j->size());
+                        copy(j->begin(),j->end(),i->begin()+s);
+                        j->clear();
+                    }
+            }
+        }
+        //整理下,将那些空组都删除了
+        for(vector<vector<int > >::iterator i=LL[k].begin();i!=LL[k].end();)
+        {
+            if( i->empty() )
+            {
+                i=LL[k].erase(i);
+            }
+            else
+                i++;
+        }
+    }
+    /*
+        匹配出全部的经纬线,横向和纵向的存储到LL中去.
+     */
+    list<Vec4f> lines[2];
+    for(int k=0;k<2;++k)
+    {
+        for(vector<vector<int > >::iterator i=LL[k].begin();i!=LL[k].end();++i)
+        {
+            vector<Vec2i> vp;
+            for(vector<int>::iterator j=i->begin();j!=i->end();++j)
+            {
+                Vec2i p;
+                p[0] = LLPts[*j].ox;
+                p[1] = LLPts[*j].oy;
+                vp.push_back(p);
+            }
+            if(vp.size() > 1 )
+            {
+                Vec4f line;
+                fitLine(vp, line, CV_DIST_L1, 0, 0, 0);
+                lines[k].push_back(line);
+            }
+        }
+    }
+  
+    //排除重复直线
+    for(int k=0;k<2;++k)
+    {
+        Tlines[k].resize(lines[k].size());
+        copy(lines[k].begin(),lines[k].end(),Tlines[k].begin());
+    }
+}
+bool RgnGrid::isParallel(Vec4f L0,Vec4f L1)
+{
+    Vec2f pt = Cross(L0,L1);
+    if( pt[0] < 0 || pt[1]<0 ||
+        pt[0] > cols || pt[1] > rows )
+        return false;
+    return true;
+}
+//计算vp0,vp1是否共线,首先将它们集合起来求匹配直线.然后检测每个点的偏离距离.必须保证在阀值范围内
+bool RgnGrid::Collinear(vector<int>& vp0,vector<int>& vp1)
+{
+    vector<Vec2i> vp;
+    Vec4f line;
+    for( vector<int>::iterator i=vp0.begin();i!=vp0.end();++i)
+    {
+        Vec2i v;
+        v[0] = LLPts[*i].ox;
+        v[1] = LLPts[*i].oy;
+        vp.push_back(v);
+    }
+    for( vector<int>::iterator i=vp1.begin();i!=vp1.end();++i)
+    {
+        Vec2i v;
+        v[0] = LLPts[*i].ox;
+        v[1] = LLPts[*i].oy;
+        vp.push_back(v);
+    }
+    fitLine(vp, line, CV_DIST_L1, 0, 0, 0);
+    for(vector<Vec2i>::iterator i=vp.begin();i!=vp.end();++i)
+    {
+        if(lineDistance(line, (*i)[0], (*i)[1])>3)
+            return false;
+    }
+    return true;
 }
 /*
     从点start开始,搜索.将搜索到的点的索引放入vp中

@@ -323,7 +323,6 @@ protected:
     /*
      初步筛选,先对每条边上的点进行排除.那些明显不是一条直线的点
      */
-    float lineDistance(Vec4f l,int x,int y); //计算点到直线的距离
     void LinearSelect();
     bool isInCrossPt(TLPt& pt);
     
@@ -345,6 +344,8 @@ protected:
     void SelectMatch(float tro);
     void addCrossR(TLPt& pt,vector<TLPt>& vp0,vector<TLPt>& vp1);
     void CrossRang(vector<TLPt>& pts,TLPt& pt,vector<int>& vp0,vector<int> &vp1);
+    bool isParallel(Vec4f L0,Vec4f L1);
+    bool Collinear(vector<int>& vp0,vector<int>& vp1);
     void SelectMatch2(float tro);
     void SelectEdge(list<TLPt>& edge,vector<TLVector>& vps,float tro,int bs);
     void addCornerV2i(vector<Vec2i>& tlp,int m);
@@ -356,6 +357,8 @@ protected:
     TLVector CrossPt; //C型点
     vector<TLPt> LLPts;
     vector<vector<int> > LL[2];
+    list<Vec4f> Tlines[2];
+    vector<Point2f> LLine[4]; //经纬线,0,2组成纵线,1,3组成横线.0,2数量一样一一对应.1,3一一对应
     int Intact[4];
     bool Guess();
     bool GuessIncomplete(int type);
