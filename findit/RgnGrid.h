@@ -351,16 +351,20 @@ protected:
     void addCornerV2i(vector<Vec2i>& tlp,int m);
     void MatchEdge(list<TLPt> edge[4]);
     Vec4f OuterBorder[4]; //外边框直线
+    Vec4f OuterBorder2[4]; //使用方法2求出来的.
     TLPt Corner[4]; //是个角点
     vector<TLVector> TBorders[4]; //全部T型边分组.
-    TLVector TBorder[4]; //T型边,匹配好的T形边变
+    TLVector TBorder[4]; //T型边,匹配好的T形边
     TLVector CrossPt; //C型点
-    vector<TLPt> LLPts;
-    vector<vector<int> > LL[2];
-    list<Vec4f> Tlines[2];
+    vector<TLPt> LLPts; //发现点的集合,注意rang[4]和idx将被填充
+    vector<vector<int> > LL[2]; //经纬点索引,是LLPts中的索引,0横向,1是纵向
+    vector<Vec4f> Tlines[2]; //经纬线,0横向,1是纵向
     vector<Point2f> LLine[4]; //经纬线,0,2组成纵线,1,3组成横线.0,2数量一样一一对应.1,3一一对应
     int Intact[4];
-    bool Guess();
+    bool Guess(); //通过T型边来猜测
+    bool getEdgeRect(int i,int rect[8]);
+    Vec4f getCrossLine(int i);
+    bool Guess2(); //通过中间点来猜测
     bool GuessIncomplete(int type);
     bool setCorner(int i,Vec4f L0,Vec4f L1);
     Point2f eqPoint(Point2f p0,Point2f p1,int n,int i );

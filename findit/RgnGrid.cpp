@@ -56,11 +56,13 @@ void save(vector<Lines>& lines)
  */
 static float get_y( Vec4f line,float x )
 {
+    if( line[0]==0 ) return 0;
     float t = (x-line[2])/line[0];
     return line[1]*t+line[3];
 }
 static float get_x( Vec4f line,float y )
 {
+    if( line[1]==0 ) return 0;
     float t = (y-line[3])/line[1];
     return line[0]*t+line[2];
 }
@@ -576,16 +578,29 @@ void RgnGrid::drawTL(Mat& mt,int type)
                 }
             }
         }*/
-        
+        //0横向,1是纵向
+        /*
         for(int k=0;k<2;++k)
         {
             Scalar color;
-            if(k==0)
-                color = Scalar(255,0,0);
-            else
-                color = Scalar(0,0,255);
-            for(list<Vec4f>::iterator i=Tlines[k].begin();i!=Tlines[k].end();++i)
+            for(vector<Vec4f>::iterator i=Tlines[k].begin();i!=Tlines[k].end();++i)
+            {
+                if(k==0)
+                    color = Scalar(255,0,0);
+                else
+                    color = Scalar(0,0,255);
+                if(i==Tlines[k].begin())
+                    color = Scalar(255,127,0);
+                else if(i+1==Tlines[k].end())
+                    color = Scalar(0,127,255);
                 draw_v4f(mt,*i, color);
+            }
+        }
+         */
+        //绘制使用十字点信息分析出来的外边线
+        for(int i=0;i<4;++i)
+        {
+            draw_v4f(mt, OuterBorder2[i], Scalar(255,0,0));
         }
     }
 }
@@ -646,6 +661,14 @@ void RgnGrid::GuessGrid()
     {
         printf("Error!\n");
     }
+    if( Guess2() )
+    {
+        printf("Found2!\n");
+    }
+    else
+    {
+        printf("Error2!\n");
+    }
 }
 
 void RgnGrid::clear()
@@ -658,6 +681,15 @@ void RgnGrid::clear()
         Edge[i].clear();
         Corner[i].type = TNothing; //清除角点
         Intact[i] = 0;
+        LLine[i].clear();
+        OuterBorder[i][0]=0;
+        OuterBorder[i][1]=0;
+        OuterBorder[i][2]=0;
+        OuterBorder[i][3]=0;
+        OuterBorder2[i][0]=0;
+        OuterBorder2[i][1]=0;
+        OuterBorder2[i][2]=0;
+        OuterBorder2[i][3]=0;
     }
     CrossPt.clear();
     LLPts.clear();
@@ -3156,6 +3188,7 @@ void RgnGrid::SelectMatch2(float tro)
     /*
         两两线段比较,看看是不是共线.如果共线则合并
         SpeedFix:这里Collinear使用fitLine,和没点距离比较.同时复杂度也很高
+        LL 0横向,1是纵向
      */
     for(int k=0;k<2;++k)
     {
@@ -3378,6 +3411,194 @@ bool RgnGrid::Guess()
     }
     return true;
 }
+/*
+ LL 0横向,1是纵向
+ */
+static bool sort_line_x(int y,const Vec4f& l0,const Vec4f& l1)
+{
+    return get_x(l0,y) < get_x(l1,y);
+}
+static bool sort_line_y(int x,const Vec4f& l0,const Vec4f& l1)
+{
+    return get_y(l0,x) < get_y(l1,x);
+}
+//根据十字线的经纬线返回T型线段的所在范围
+//i=0上半部.i=1右,i=2下,i=3左
+//rect[8] 分别表示左上角的点坐标,和右下角的点坐标
+//返回所在区域的四个顶点这坐标
+bool RgnGrid::getEdgeRect(int i,int rect[8])
+{
+    Point2f pt;
+    if( Tlines[0].size()<2 || Tlines[1].size()<2)
+        return false;
+    if(i==0)
+    {
+        rect[0]=get_x(Tlines[1].front(),0);
+        rect[1]=0;
+        rect[2]=get_x(Tlines[1].back(),0);
+        rect[3]=0;
+        pt = Cross(Tlines[1].back(), Tlines[0].front());
+        rect[4]=pt.x;
+        rect[5]=pt.y;
+        pt = Cross(Tlines[0].front(),Tlines[1].front());
+        rect[6]=pt.x;
+        rect[7]=pt.y;
+    }
+    else if(i==1)
+    {
+        pt = Cross(Tlines[1].back(), Tlines[0].front());
+        rect[0]=pt.x;
+        rect[1]=pt.y;
+        rect[2]=cols;
+        rect[3]=get_y(Tlines[0].front(),cols);
+        rect[4]=cols;
+        rect[5]=get_y(Tlines[0].back(),cols);
+        pt=Cross(Tlines[0].back(),Tlines[1].back());
+        rect[6]=pt.x;
+        rect[7]=pt.y;
+    }
+    else if(i==2)
+    {
+        pt = Cross(Tlines[0].back(),Tlines[1].front());
+        rect[0]=pt.x;
+        rect[1]=pt.y;
+        pt = Cross(Tlines[0].back(),Tlines[1].back());
+        rect[2]=pt.x;
+        rect[3]=pt.y;
+        rect[4]=get_x(Tlines[1].back(),rows);
+        rect[5]=rows;
+        rect[6]=get_x(Tlines[1].front(),rows);
+        rect[7]=rows;
+    }
+    else if(i==3)
+    {
+        rect[0]=0;
+        rect[1]=get_y(Tlines[0].front(),0);
+        pt = Cross(Tlines[1].front(),Tlines[0].front());
+        rect[2]=pt.x;
+        rect[3]=pt.y;
+        pt = Cross(Tlines[0].back(),Tlines[1].front());
+        rect[4]=pt.x;
+        rect[5]=pt.y;
+        rect[6]=0;
+        rect[7]=get_y(Tlines[0].back(),0);
+    }
+    return true;
+}
+//rect是4个点,判断点x,y在4点组成的多边形内
+//rect必须是凸多边形,算法如下.计算点x,y和个个线段的交点,如果x,y处于两个交点之间返回true
+static bool get_segment_x(int pt0[2],int pt1[2],int y,int &x)
+{
+    if( y <= max(pt0[1],pt1[1])&&y>=min(pt0[1],pt1[1]))
+    {
+        Vec4f line;
+        buildLine(pt0,pt1,line);
+        x = get_x(line,y);
+        return true;
+    }
+    return false;
+}
+static bool isInRect(int rect[8],int x,int y)
+{
+    //直线y=y,和个直线段的交点,因为是凸四边形,因此只能有两个交点
+    int xx[4];
+    int sx;
+    int c=0;
+    if( get_segment_x(rect,rect+2,y,sx) )
+    {
+        xx[c++] = sx;
+    }
+    if( get_segment_x(rect+2,rect+4,y,sx) )
+    {
+        xx[c++] = sx;
+    }
+    if( get_segment_x(rect+4,rect+6,y,sx) )
+    {
+        xx[c++] = sx;
+    }
+    if( get_segment_x(rect+6,rect,y,sx) )
+    {
+        xx[c++] = sx;
+    }
+    if( c==2 )
+    {
+        if( x <= max(xx[0],xx[1]) && x >= min(xx[0],xx[1]) )
+            return true;
+    }
+    return false;
+}
+//返回边界线,Guess2辅助函数
+Vec4f RgnGrid::getCrossLine(int i)
+{
+    switch(i)
+    {
+        case 0: return Tlines[0].front();
+        case 1: return Tlines[1].back();
+        case 2: return Tlines[0].back();
+        default: return Tlines[1].front();
+    }
+}
+bool RgnGrid::Guess2()
+{
+    //首先对Tlines进行排序
+    //选择屏幕的中线,让各线与之求交,对交点排序
+    sort(Tlines[0].begin(),Tlines[0].end(),boost::bind(sort_line_y,(int)(rows/2),_1,_2));
+    sort(Tlines[1].begin(),Tlines[1].end(),boost::bind(sort_line_x,(int)(cols/2),_1,_2));
+    /*
+        结合目前知道的十字点判断出来的线组Tlines,从TBorders中选取T型边
+        确保指定的T型边在指定的范围里面.
+        满足2个条件:1在指定的直线外面.2和指定线组保持平行基本.
+     */
+    //先进行区域筛选
+    for(int i=0;i<4;i++)
+    {
+        int vps_max = 0;
+        int rect[8];
+        vector<Vec2i> vp;
+        if( !getEdgeRect(i, rect) )continue;
+        
+        for(vector<TLVector>::iterator j=TBorders[i].begin();j!=TBorders[i].end();++j)
+        {
+            for(TLVector::iterator k=j->begin();k!=j->end();++k)
+            {
+                if( isInRect(rect, k->ox, k->oy) )
+                { //在指定区域
+                    Vec2i v;
+                    v[0] = k->ox;
+                    v[1] = k->oy;
+                    vp.push_back(v);
+                }
+            }
+            if( vp.size()>1 )
+            {
+                Vec4f line;
+                Vec4f l2 = getCrossLine(i);
+                fitLine(vp,line,CV_DIST_L1,0,0,0);
+                //和靠近它的十字线相交,角度要接近
+                float a0 = my_atan(line[1], line[0]);
+                float a1 = my_atan(l2[1], l2[0]);
+                if( angle_tro(a0, a1, 5*CV_PI/180))
+                {//符合角度条件
+                    /*
+                        这里应该做更加复杂判断,确定那些T型边更加符合条件
+                        目前仅仅取T型边的数量最多的那条.当然上面条件都满足的情况下
+                     */
+                    if( vp.size() > vps_max )
+                    {
+                        vps_max = (int)vp.size();
+                        OuterBorder2[i] = line;
+                    }
+                }
+            }
+            vp.clear();
+        }
+    }
+    /*
+        根据外边界和十字线,来计算推测出上的顺序点
+     */
+    return false;
+}
+
 static Point2f Footdrop(Vec4f L,Point2f p)
 {
     Vec4f L2;
