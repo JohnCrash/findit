@@ -602,6 +602,13 @@ void RgnGrid::drawTL(Mat& mt,int type)
         {
             draw_v4f(mt, OuterBorder2[i], Scalar(255,0,0));
         }
+        for(int i=0;i<4;++i)
+        {
+            for(vector<Point2f>::iterator j=LLine[i].begin();j!=LLine[i].end();++j)
+            {
+                circle(mt,*j,5,Scalar(0,0,255),3,8,0);
+            }
+        }
     }
 }
 
@@ -681,6 +688,7 @@ void RgnGrid::clear()
         Edge[i].clear();
         Corner[i].type = TNothing; //清除角点
         Intact[i] = 0;
+        Intact2[i] = 0;
         LLine[i].clear();
         OuterBorder[i][0]=0;
         OuterBorder[i][1]=0;
@@ -3594,9 +3602,47 @@ bool RgnGrid::Guess2()
         }
     }
     /*
-        根据外边界和十字线,来计算推测出上的顺序点
+        对边进行求点,通过十字交叉线.
      */
-    return false;
+    for(int i=0;i<4;i++)
+    {//将T型边线插入Tlines其中
+        if(OuterBorder2[i][0]==0&&OuterBorder2[i][1]==0)
+        {
+            Intact2[i]=0; //表示该侧,T型边不存在
+            continue;
+        }
+        else
+        {
+            Intact2[i]=1;
+            if(i==0)
+                Tlines[0].insert(Tlines[0].begin(),OuterBorder2[i]);
+            else if(i==1)
+                Tlines[1].push_back(OuterBorder2[i]);
+            else if(i==2)
+                Tlines[0].push_back(OuterBorder2[i]);
+            else if(i==3)
+                Tlines[1].insert(Tlines[1].begin(),OuterBorder2[i]);
+        }
+    }
+    /*
+        根据交叉直线计算边界上的交点.
+     */
+    Vec4f f,b;
+    f = Tlines[1].front();
+    b = Tlines[1].back();
+    for(vector<Vec4f>::iterator i=Tlines[0].begin();i!=Tlines[0].end();++i)
+    {
+        LLine[3].push_back(Cross(f,*i));
+        LLine[1].push_back(Cross(b,*i));
+    }
+    f = Tlines[0].front();
+    b = Tlines[0].back();
+    for(vector<Vec4f>::iterator i=Tlines[1].begin();i!=Tlines[1].end();++i)
+    {
+        LLine[0].push_back(Cross(f,*i));
+        LLine[2].push_back(Cross(b,*i));
+    }
+    return true;
 }
 
 static Point2f Footdrop(Vec4f L,Point2f p)

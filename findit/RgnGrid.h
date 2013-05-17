@@ -361,6 +361,7 @@ protected:
     vector<Vec4f> Tlines[2]; //经纬线,0横向,1是纵向
     vector<Point2f> LLine[4]; //经纬线,0,2组成纵线,1,3组成横线.0,2数量一样一一对应.1,3一一对应
     int Intact[4];
+    int Intact2[4]; //表示Tlines中某侧是不是缺少T型边
     bool Guess(); //通过T型边来猜测
     bool getEdgeRect(int i,int rect[8]);
     Vec4f getCrossLine(int i);
