@@ -3642,6 +3642,10 @@ bool RgnGrid::Guess2()
         LLine[0].push_back(Cross(f,*i));
         LLine[2].push_back(Cross(b,*i));
     }
+    /*
+        首先查找出最小格
+     */
+    
     return true;
 }
 
